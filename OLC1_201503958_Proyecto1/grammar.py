@@ -13,10 +13,6 @@ from tkinter import Tk, Menu, messagebox, filedialog, ttk, Label, scrolledtext, 
 
 errores = []
 reservadas = {
-    'int'       : 'RINT',
-    'float'     : 'RFLOAT',
-    'string'    : 'RSTRING',
-    'boolean'   : 'RBOOLEAN',
     'print'     : 'RPRINT',
     'if'        : 'RIF',
     'else'      : 'RELSE',
@@ -24,6 +20,7 @@ reservadas = {
     'true'      : 'RTRUE',
     'false'     : 'RFALSE',
     'break'     : 'RBREAK',
+    'var'       : 'RVAR'
 }
 
 tokens  = [
@@ -34,9 +31,16 @@ tokens  = [
     'LLAVEC',
     'MAS',
     'MENOS',
+    'POR',
+    'DIV',
+    'MOD',
+    'POT',
     'MENORQUE',
     'MAYORQUE',
+    'MENORIGUAL',
+    'MAYORIGUAL',
     'IGUALIGUAL',
+    'DIFERENTE',
     'IGUAL',
     'AND',
     'OR',
@@ -55,8 +59,15 @@ t_LLAVEA        = r'{'
 t_LLAVEC        = r'}'
 t_MAS           = r'\+'
 t_MENOS         = r'-'
+t_POR           = r'\*'
+t_DIV           = r'/'
+t_MOD           = r'%'
+t_POT           = r'\*\*'
 t_MENORQUE      = r'<'
 t_MAYORQUE      = r'>'
+t_MENORIGUAL    = r'<='
+t_MAYORIGUAL    = r'>='
+t_DIFERENTE     = r'=!'
 t_IGUALIGUAL    = r'=='
 t_IGUAL         = r'='
 t_AND           = r'&&'
@@ -88,15 +99,25 @@ def t_ID(t):
 
 def t_CADENA(t):
     r'(\".*?\")'
-    t.value = t.value[1:-1] # remuevo las comillas
+    t.value = t.value[1:-1] 
     return t
 
-# Comentario simple // ...
+def t_SCAPE_STRING(t):
+    r'\"(\\"|.)*?\"'
+    t.value = t.value.replace('\\t', '\t')
+    t.value = t.value.replace('\\n', '\n')
+    t.value = t.value.replace("\\'", "\'")
+    t.value = t.value.replace('\\\\', '\\')
+    return t
+
+def t_COMENTARIO_MULT(t):
+    r'\#\*(.|\n)*\*\#'
+    t.lexer.lineno += 1
+
 def t_COMENTARIO_SIMPLE(t):
     r'\#.*\n'
     t.lexer.lineno += 1
 
-# Caracteres ignorados
 t_ignore = " \t"
 
 def t_newline(t):
@@ -107,24 +128,22 @@ def t_error(t):
     errores.append(Excepcion("Lexico","Error léxico." + t.value[0] , t.lexer.lineno, find_column(input, t)))
     t.lexer.skip(1)
 
-# Compute column.
-#     input is the input text string
-#     token is a token instance
 def find_column(inp, token):
     line_start = inp.rfind('\n', 0, token.lexpos) + 1
     return (token.lexpos - line_start) + 1
 
-# Construyendo el analizador léxico
 import ply.lex as lex
 lexer = lex.lex(reflags= re.IGNORECASE)
 
-# Asociación de operadores y precedencia
+
 precedence = (
     ('left','OR'),
     ('left','AND'),
     ('right','UNOT'),
-    ('left','MENORQUE','MAYORQUE', 'IGUALIGUAL'),
+    ('left','MENORQUE','MAYORQUE', 'IGUALIGUAL','DIFERENTE'), 
     ('left','MAS','MENOS'),
+    ('left','DIV','POR','MOD'),
+    ('left','POT'),
     ('right','UMENOS'),
     )
 
@@ -168,7 +187,8 @@ def p_instrucciones_instruccion(t) :
 
 def p_instruccion(t) :
     '''instruccion      : imprimir_instr finins
-                        | declaracion_instr finins
+                        | declaracion_instr_simple finins
+                        | declaracion_instr_completa finins
                         | asignacion_instr finins
                         | if_instr
                         | while_instr
@@ -187,19 +207,27 @@ def p_instruccion_error(t):
 #///////////////////////////////////////IMPRIMIR//////////////////////////////////////////////////
 
 def p_imprimir(t) :
-    'imprimir_instr     : RPRINT PARA expresion PARC'
+    'imprimir_instr     : RPRINT PARA expresion PARC finins'
     t[0] = Imprimir(t[3], t.lineno(1), find_column(input, t.slice[1]))
 
-#///////////////////////////////////////DECLARACION//////////////////////////////////////////////////
+#///////////////////////////////////////DECLARACION COMPLETA//////////////////////////////////////////////////
 
-def p_declaracion(t) :
-    'declaracion_instr     : tipo ID IGUAL expresion'
-    t[0] = Declaracion(t[1], t[2], t.lineno(2), find_column(input, t.slice[2]), t[4])
+def p_declaracion_completa(t) :
+    'declaracion_instr_completa     : RVAR ID IGUAL expresion finins'
+    
+    t[0] = Declaracion(t[2], t.lineno(2), find_column(input, t.slice[2]), t[4])
+
+#///////////////////////////////////////DECLARACION SIMPLE//////////////////////////////////////////////////
+
+def p_declaracion_simple(t) :
+    'declaracion_instr_simple     : RVAR ID finins'
+    primitivo_nulo = Primitivos(TIPO.NULO, t[1], t.lineno(1), find_column(input, t.slice[1]))
+    t[0] = Declaracion(t[2], t.lineno(2), find_column(input, t.slice[2]),primitivo_nulo)
 
 #///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
 
 def p_asignacion(t) :
-    'asignacion_instr     : ID IGUAL expresion'
+    'asignacion_instr     : ID IGUAL expresion finins'
     t[0] = Asignacion(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
 
 #///////////////////////////////////////IF//////////////////////////////////////////////////
@@ -225,24 +253,9 @@ def p_while(t) :
 #///////////////////////////////////////BREAK//////////////////////////////////////////////////
 
 def p_break(t) :
-    'break_instr     : RBREAK'
+    'break_instr     : RBREAK finins'
     t[0] = Break(t.lineno(1), find_column(input, t.slice[1]))
 
-#///////////////////////////////////////TIPO//////////////////////////////////////////////////
-
-def p_tipo(t) :
-    '''tipo     : RINT
-                | RFLOAT
-                | RSTRING
-                | RBOOLEAN '''
-    if t[1] == 'int':
-        t[0] = TIPO.ENTERO
-    elif t[1] == 'float':
-        t[0] = TIPO.DECIMAL
-    elif t[1] == 'string':
-        t[0] = TIPO.CADENA
-    elif t[1] == 'boolean':
-        t[0] = TIPO.BOOLEANO
 
 #///////////////////////////////////////EXPRESION//////////////////////////////////////////////////
 
@@ -250,8 +263,15 @@ def p_expresion_binaria(t):
     '''
     expresion : expresion MAS expresion
             | expresion MENOS expresion
+            | expresion POR expresion
+            | expresion DIV expresion
+            | expresion POT expresion
+            | expresion MOD expresion
             | expresion MENORQUE expresion
             | expresion MAYORQUE expresion
+            | expresion MENORIGUAL expresion
+            | expresion MAYORIGUAL expresion
+            | expresion DIFERENTE expresion
             | expresion IGUALIGUAL expresion
             | expresion AND expresion
             | expresion OR expresion
@@ -260,12 +280,26 @@ def p_expresion_binaria(t):
         t[0] = Aritmetica(OperadorAritmetico.MAS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '-':
         t[0] = Aritmetica(OperadorAritmetico.MENOS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '*':
+        t[0] = Aritmetica(OperadorAritmetico.POR, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '/':
+        t[0] = Aritmetica(OperadorAritmetico.DIV, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '**':
+        t[0] = Aritmetica(OperadorAritmetico.POT, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '%':
+        t[0] = Aritmetica(OperadorAritmetico.MOD, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '<':
         t[0] = Relacional(OperadorRelacional.MENORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '>':
         t[0] = Relacional(OperadorRelacional.MAYORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '<=':
+        t[0] = Relacional(OperadorRelacional.MENORIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '>=':
+        t[0] = Relacional(OperadorRelacional.MAYORIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '==':
         t[0] = Relacional(OperadorRelacional.IGUALIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '=!':
+        t[0] = Relacional(OperadorRelacional.DIFERENTE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '&&':
         t[0] = Logica(OperadorLogico.AND, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '||':
@@ -298,6 +332,8 @@ def p_expresion_entero(t):
 def p_primitivo_decimal(t):
     '''expresion : DECIMAL'''
     t[0] = Primitivos(TIPO.DECIMAL, t[1], t.lineno(1), find_column(input, t.slice[1]))
+
+
 
 def p_primitivo_cadena(t):
     '''expresion : CADENA'''
@@ -334,7 +370,6 @@ from TS.Arbol import Arbol
 from TS.TablaSimbolos import TablaSimbolos
 
 def analizar():
-    
     entrada = Text1.get(1.0,END)
 
     instrucciones = parse(entrada.lower()) #ARBOL AST
@@ -342,12 +377,12 @@ def analizar():
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)
     
-    for error in errores:                   #CAPTURA DE ERRORES LEXICOS Y SINTACTICOS
+    for error in errores:    
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
     #END
 
-    for instruccion in ast.getInstrucciones():      # REALIZAR LAS ACCIONES
+    for instruccion in ast.getInstrucciones():    
         value = instruccion.interpretar(ast,TSGlobal)
         if isinstance(value, Excepcion) :
             ast.getExcepciones().append(value)

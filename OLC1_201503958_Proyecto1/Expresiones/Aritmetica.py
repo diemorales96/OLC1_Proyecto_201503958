@@ -19,32 +19,134 @@ class Aritmetica(Instruccion):
             der = self.OperacionDer.interpretar(tree, table)
             if isinstance(der, Excepcion): return der
 
-
-        if self.operador == OperadorAritmetico.MAS: #SUMA
+ #-----------------------------------------------SUMA-----------------------------------------------------------
+        if self.operador == OperadorAritmetico.MAS: 
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
-            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.CADENA:
-                self.tipo = TIPO.CADENA
-                return str(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
-            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.ENTERO:
-                self.tipo = TIPO.CADENA
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
-            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.CADENA:
-                self.tipo = TIPO.CADENA
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.ENTERO
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) + int(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) + int(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                return   int(self.obtenerVal(self.OperacionIzq.tipo, der)) + self.obtenerVal(self.OperacionDer.tipo, izq)
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return   int(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para +.", self.fila, self.columna)
-
-        elif self.operador == OperadorAritmetico.MENOS: #RESTA
+    #-----------------------------------------------RESTA-----------------------------------------------------------
+        elif self.operador == OperadorAritmetico.MENOS: 
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.ENTERO
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) - int(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) - int(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                return int(self.obtenerVal(self.OperacionIzq.tipo, izq)) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return int(self.obtenerVal(self.OperacionIzq.tipo, izq)) - self.obtenerVal(self.OperacionDer.tipo, der)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para -.", self.fila, self.columna)
-
-        elif self.operador == OperadorAritmetico.UMENOS: #NEGACION UNARIA
+ #-----------------------------------------------MULTIPLICACION-----------------------------------------------------------
+        elif self.operador == OperadorAritmetico.POR:
+            if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) * self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) * self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) * self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) * self.obtenerVal(self.OperacionDer.tipo, der)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para *.", self.fila, self.columna)
+ #-----------------------------------------------DIVISION-----------------------------------------------------------------
+        elif self.operador == OperadorAritmetico.DIV:
+            if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                if self.OperacionDer.valor != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                if self.OperacionDer.valor != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                if self.OperacionDer.valor != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                if self.OperacionDer.valor != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para /.", self.fila, self.columna)
+ #-----------------------------------------------POTENCIA-----------------------------------------------------------
+        elif self.operador == OperadorAritmetico.POT:
+            if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) ** self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) ** self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) ** self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) ** self.obtenerVal(self.OperacionDer.tipo, der)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para **.", self.fila, self.columna) 
+ #-----------------------------------------------MODULO-----------------------------------------------------------
+        elif self.operador == OperadorAritmetico.MOD:
+            if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para %.", self.fila, self.columna)            
+ #-----------------------------------------------NEGACION UNARIA-----------------------------------------------------------
+        elif self.operador == OperadorAritmetico.UMENOS: 
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
                 return - self.obtenerVal(self.OperacionIzq.tipo, izq)
@@ -54,6 +156,7 @@ class Aritmetica(Instruccion):
             return Excepcion("Semantico", "Tipo Erroneo de operacion para - unario.", self.fila, self.columna)
         return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna)
 
+        
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:
             return int(val)
