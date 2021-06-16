@@ -9,7 +9,7 @@ class Imprimir(Instruccion):
         self.columna = columna
 
     def interpretar(self, tree, table):
-        value = self.expresion.interpretar(tree, table)  # RETORNA CUALQUIER VALOR
+        value = self.expresion.interpretar(tree, table)  
 
         if isinstance(value, Excepcion) :
             return value
@@ -19,3 +19,4 @@ class Imprimir(Instruccion):
         
         tree.updateConsola(value)
         return None
+    

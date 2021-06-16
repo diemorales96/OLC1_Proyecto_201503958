@@ -1,4 +1,5 @@
 
+from Instrucciones.Main import Main
 import re
 from TS.Excepcion import Excepcion
 
@@ -15,15 +16,16 @@ errores = []
 reservadas = {
     'print'     : 'RPRINT',
     'if'        : 'RIF',
+    'for'       : 'RFOR',
     'else'      : 'RELSE',
     'while'     : 'RWHILE',
     'true'      : 'RTRUE',
     'false'     : 'RFALSE',
     'break'     : 'RBREAK',
-    'var'       : 'RVAR'
+    'var'       : 'RVAR',
+    'null'      : 'RNULL',
+    'main'      : 'RMAIN'
 }
-
-
 
 tokens  = [
     'PUNTOCOMA',
@@ -50,6 +52,7 @@ tokens  = [
     'DECIMAL',
     'ENTERO',
     'CADENA',
+    'CARACTER',
     'ID'
 ] + list(reservadas.values())
 
@@ -104,6 +107,11 @@ def t_CADENA(t):
     t.value = t.value[1:-1] 
     return t
 
+def t_CARACTER(t):
+    r'(\'.?\')'
+    t.value = t.value[1:-1] 
+    return t
+
 def t_SCAPE_STRING(t):
     r'\"(\\"|.)*?\"'
     t.value = t.value.replace('\\t', '\t')
@@ -149,9 +157,7 @@ precedence = (
     ('right','UMENOS'),
     )
 
-# Definición de la gramática
 
-#Abstract
 from Abstract.Instruccion import Instruccion
 from Instrucciones.Imprimir import Imprimir
 from Expresiones.Primitivos import Primitivos
@@ -164,7 +170,9 @@ from Expresiones.Identificador import Identificador
 from Instrucciones.Asignacion import Asignacion
 from Instrucciones.If import If
 from Instrucciones.While import While
+from Instrucciones.For import For
 from Instrucciones.Break import Break
+from Instrucciones.Incremento import Incremento
 
 def p_init(t) :
     'init            : instrucciones'
@@ -194,7 +202,10 @@ def p_instruccion(t) :
                         | asignacion_instr finins
                         | if_instr
                         | while_instr
-                        | break_instr finins'''
+                        | break_instr finins
+                        | incremento_decremento_instr finins
+                        | for_instr
+                        | main_instr'''
     t[0] = t[1]
 
 def p_finins(t) :
@@ -209,27 +220,27 @@ def p_instruccion_error(t):
 #///////////////////////////////////////IMPRIMIR//////////////////////////////////////////////////
 
 def p_imprimir(t) :
-    'imprimir_instr     : RPRINT PARA expresion PARC finins'
+    'imprimir_instr     : RPRINT PARA expresion PARC'
     t[0] = Imprimir(t[3], t.lineno(1), find_column(input, t.slice[1]))
 
 #///////////////////////////////////////DECLARACION COMPLETA//////////////////////////////////////////////////
 
 def p_declaracion_completa(t) :
-    'declaracion_instr_completa     : RVAR ID IGUAL expresion finins'
+    'declaracion_instr_completa     : RVAR ID IGUAL expresion'
     
     t[0] = Declaracion(t[2], t.lineno(2), find_column(input, t.slice[2]), t[4])
 
 #///////////////////////////////////////DECLARACION SIMPLE//////////////////////////////////////////////////
 
 def p_declaracion_simple(t) :
-    'declaracion_instr_simple     : RVAR ID finins'
-    primitivo_nulo = Primitivos(TIPO.NULO, t[1], t.lineno(1), find_column(input, t.slice[1]))
+    'declaracion_instr_simple     : RVAR ID'
+    primitivo_nulo = Primitivos(TIPO.NULO, None, t.lineno(1), find_column(input, t.slice[1]))
     t[0] = Declaracion(t[2], t.lineno(2), find_column(input, t.slice[2]),primitivo_nulo)
 
 #///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
 
 def p_asignacion(t) :
-    'asignacion_instr     : ID IGUAL expresion finins'
+    'asignacion_instr     : ID IGUAL expresion'
     t[0] = Asignacion(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
 
 #///////////////////////////////////////IF//////////////////////////////////////////////////
@@ -252,18 +263,28 @@ def p_while(t) :
     'while_instr     : RWHILE PARA expresion PARC LLAVEA instrucciones LLAVEC'
     t[0] = While(t[3], t[6], t.lineno(1), find_column(input, t.slice[1]))
 
+def p_for(t) :
+    'for_instr     : RFOR PARA declaracion_instr_completa PUNTOCOMA expresion PUNTOCOMA incremento_decremento_instr PARC LLAVEA instrucciones LLAVEC'
+    t[0] =  For(t[3], t[5],t[7],t[10], t.lineno(1), find_column(input, t.slice[1]))
+
 #///////////////////////////////////////BREAK//////////////////////////////////////////////////
 
 def p_break(t) :
-    'break_instr     : RBREAK finins'
+    'break_instr     : RBREAK'
     t[0] = Break(t.lineno(1), find_column(input, t.slice[1]))
 
 
+def p_main(t):
+    'main_instr     : RMAIN PARA PARC LLAVEA instrucciones LLAVEC'
+    t[0] = Main(t[5],t.lineno(1),find_column(input,t.slice[1]))
+ 
 #///////////////////////////////////////EXPRESION//////////////////////////////////////////////////
 
 def p_expresion_binaria(t):
     '''
-    expresion : expresion MAS expresion
+    expresion : expresion MAS MAS
+            | expresion MAS expresion
+            | expresion MENOS MENOS
             | expresion MENOS expresion
             | expresion POR expresion
             | expresion DIV expresion
@@ -278,8 +299,12 @@ def p_expresion_binaria(t):
             | expresion AND expresion
             | expresion OR expresion
     '''
-    if t[2] == '+':
+    if t[2] == '+' and t[3] == '+':
+        t[0] = Aritmetica(OperadorAritmetico.INCREMENTO, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '+':
         t[0] = Aritmetica(OperadorAritmetico.MAS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '-' and t[3] == '-':
+        t[0] = Aritmetica(OperadorAritmetico.Decremento, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '-':
         t[0] = Aritmetica(OperadorAritmetico.MENOS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '*':
@@ -317,6 +342,16 @@ def p_expresion_unaria(t):
     elif t[1] == '!':
         t[0] = Logica(OperadorLogico.NOT, t[2],None, t.lineno(1), find_column(input, t.slice[1]))
 
+def p_incremento(t):
+    '''
+    incremento_decremento_instr : expresion MAS MAS 
+                                | expresion MENOS MENOS
+    '''
+    if t[2] == '+' and t[3] == '+':
+        t[0] = Incremento(OperadorAritmetico.INCREMENTO, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '-' and t[3] == '-':
+        t[0] = Incremento(OperadorAritmetico.Decremento, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
+
 def p_expresion_agrupacion(t):
     '''
     expresion :   PARA expresion PARC 
@@ -336,10 +371,13 @@ def p_primitivo_decimal(t):
     t[0] = Primitivos(TIPO.DECIMAL, t[1], t.lineno(1), find_column(input, t.slice[1]))
 
 
-
 def p_primitivo_cadena(t):
     '''expresion : CADENA'''
     t[0] = Primitivos(TIPO.CADENA,str(t[1]).replace('\\n', '\n'), t.lineno(1), find_column(input, t.slice[1]))
+
+def p_primitivo_caracter(t):
+    '''expresion : CARACTER'''
+    t[0] = Primitivos(TIPO.CHARACTER,str(t[1]).replace('\\n', '\n'), t.lineno(1), find_column(input, t.slice[1]))
 
 def p_primitivo_true(t):
     '''expresion : RTRUE'''
@@ -348,6 +386,10 @@ def p_primitivo_true(t):
 def p_primitivo_false(t):
     '''expresion : RFALSE'''
     t[0] = Primitivos(TIPO.BOOLEANO, False, t.lineno(1), find_column(input, t.slice[1]))
+
+def p_primitivo_null(t):
+    '''expresion : RNULL'''
+    t[0] = Primitivos(TIPO.NULO, None, t.lineno(1), find_column(input, t.slice[1]))
 
 import ply.yacc as yacc
 parser = yacc.yacc()
@@ -379,25 +421,44 @@ def analizar():
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)
     
-    for error in errores:    
+    for error in errores:                   # CAPTURA DE ERRORES LEXICOS Y SINTACTICOS
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
-    #END
 
-    for instruccion in ast.getInstrucciones():    
-        value = instruccion.interpretar(ast,TSGlobal)
-        if isinstance(value, Excepcion) :
-            ast.getExcepciones().append(value)
-            ast.updateConsola(value.toString())
-        #END
-        if isinstance(value, Break): 
-            err = Excepcion("Semantico", "Sentencia BREAK fuera de ciclo", instruccion.fila, instruccion.columna)
+    for instruccion in ast.getInstrucciones():      # 1ERA PASADA (DECLARACIONES Y ASIGNACIONES)
+        if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion):
+            value = instruccion.interpretar(ast,TSGlobal)
+            if isinstance(value, Excepcion) :
+                ast.getExcepciones().append(value)
+                ast.updateConsola(value.toString())
+            if isinstance(value, Break): 
+                err = Excepcion("Semantico", "Sentencia BREAK fuera de ciclo", instruccion.fila, instruccion.columna)
+                ast.getExcepciones().append(err)
+                ast.updateConsola(err.toString())
+            
+    for instruccion in ast.getInstrucciones():      # 2DA PASADA (MAIN)
+        contador = 0
+        if isinstance(instruccion, Main):
+            contador += 1
+            if contador == 2: # VERIFICAR LA DUPLICIDAD
+                err = Excepcion("Semantico", "Existen 2 funciones Main", instruccion.fila, instruccion.columna)
+                ast.getExcepciones().append(err)
+                ast.updateConsola(err.toString())
+                break
+            value = instruccion.interpretar(ast,TSGlobal)
+            if isinstance(value, Excepcion) :
+                ast.getExcepciones().append(value)
+                ast.updateConsola(value.toString())
+            if isinstance(value, Break): 
+                err = Excepcion("Semantico", "Sentencia BREAK fuera de ciclo", instruccion.fila, instruccion.columna)
+                ast.getExcepciones().append(err)
+                ast.updateConsola(err.toString())
+
+    for instruccion in ast.getInstrucciones():    # 3ERA PASADA (SENTENCIAS FUERA DE MAIN)
+        if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)):
+            err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())
-        #END
-    #END        
-        
-
     print(ast.getConsola())
 #END
 
@@ -441,4 +502,3 @@ scrollb.grid(row=0, column=3, sticky='nsew')
 salida['yscrollcommand'] = scrollb.set
 
 app.mainloop()
-

@@ -1,6 +1,7 @@
 from Abstract.Instruccion import Instruccion
 from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO, OperadorAritmetico
+from TS.Simbolo import Simbolo
 
 class Aritmetica(Instruccion):
     def __init__(self, operador, OperacionIzq, OperacionDer, fila, columna):
@@ -45,6 +46,39 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return   int(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.CADENA:
+                self.tipo = TIPO.CADENA
+                return   str(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.CADENA:
+                self.tipo = TIPO.CADENA
+                return   str(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.CADENA:
+                self.tipo = TIPO.CADENA
+                return   str(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.CHARACTER and self.OperacionDer.tipo == TIPO.CADENA:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.CHARACTER:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.CADENA:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.CHARACTER and self.OperacionDer.tipo == TIPO.CHARACTER:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + self.obtenerVal(self.OperacionDer.tipo, der)
+            elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
+                self.tipo = TIPO.ENTERO
+                return   int(self.obtenerVal(self.OperacionIzq.tipo, izq)) + int(self.obtenerVal(self.OperacionDer.tipo, der))                             
             return Excepcion("Semantico", "Tipo Erroneo de operacion para +.", self.fila, self.columna)
     #-----------------------------------------------RESTA-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.MENOS: 
@@ -154,7 +188,35 @@ class Aritmetica(Instruccion):
                 self.tipo = TIPO.DECIMAL
                 return - self.obtenerVal(self.OperacionIzq.tipo, izq)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para - unario.", self.fila, self.columna)
+ #---------------------------------------------Incremento--------------------------------------------------------------------
+        elif self.operador == OperadorAritmetico.INCREMENTO:    
+            if self.OperacionIzq.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq +1)
+                table.actualizarTabla(simbolo)
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq)+1
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq +1)
+                table.actualizarTabla(simbolo)
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq)+1
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para Incremento.", self.fila, self.columna)    
+ #---------------------------------------------DECREMENTO--------------------------------------------------------------------
+        elif self.operador == OperadorAritmetico.Decremento:    
+            if self.OperacionIzq.tipo == TIPO.ENTERO:
+                self.tipo = TIPO.ENTERO
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq - 1)
+                table.actualizarTabla(simbolo)
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq) - 1
+            elif self.OperacionIzq.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.DECIMAL
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq - 1)
+                table.actualizarTabla(simbolo)
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq) - 1
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para Incremento.", self.fila, self.columna)    
         return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna)
+
+
 
         
     def obtenerVal(self, tipo, val):

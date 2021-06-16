@@ -37,6 +37,10 @@ class TablaSimbolos:
                     tablaActual.tabla[simbolo.id].setValor(simbolo.getValor())
                     tablaActual.tabla[simbolo.id].setTipo(simbolo.getTipo())
                     return None
+                elif simbolo.getValor() == None:
+                    tablaActual.tabla[simbolo.id].setValor(simbolo.getValor())
+                    tablaActual.tabla[simbolo.id].setTipo(simbolo.getTipo())
+                    return None
                 return Excepcion("Semantico", "Tipo de dato Diferente en Asignacion", simbolo.getFila(), simbolo.getColumna())
 
             else:

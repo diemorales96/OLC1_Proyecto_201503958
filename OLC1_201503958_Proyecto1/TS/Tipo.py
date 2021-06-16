@@ -17,6 +17,8 @@ class OperadorAritmetico(Enum):
     POT = 5
     MOD = 6
     UMENOS = 7
+    INCREMENTO = 8
+    Decremento = 9
 
 class OperadorRelacional(Enum):
     MENORQUE = 1
