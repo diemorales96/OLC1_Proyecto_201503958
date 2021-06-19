@@ -58,6 +58,9 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.CADENA
                 return   self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
+            elif self.OperacionIzq.tipo == TIPO.CADENA and self.OperacionDer.tipo == TIPO.DECIMAL:
+                self.tipo = TIPO.CADENA
+                return   self.obtenerVal(self.OperacionIzq.tipo, izq) + str(self.obtenerVal(self.OperacionDer.tipo, der))
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.CADENA:
                 self.tipo = TIPO.CADENA
                 return   str(self.obtenerVal(self.OperacionIzq.tipo, izq)) + self.obtenerVal(self.OperacionDer.tipo, der)
@@ -205,15 +208,15 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.Decremento:    
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq - 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq -1)
                 table.actualizarTabla(simbolo)
-                return  self.obtenerVal(self.OperacionIzq.tipo, izq) - 1
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq)-1
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq - 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq -1)
                 table.actualizarTabla(simbolo)
-                return  self.obtenerVal(self.OperacionIzq.tipo, izq) - 1
-            return Excepcion("Semantico", "Tipo Erroneo de operacion para Incremento.", self.fila, self.columna)    
+                return  self.obtenerVal(self.OperacionIzq.tipo, izq)-1
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para Decremento.", self.fila, self.columna)    
         return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna)
 
 

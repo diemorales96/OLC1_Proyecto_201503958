@@ -1,18 +1,21 @@
 
 from Instrucciones.Main import Main
 import re
+import os
 from TS.Excepcion import Excepcion
 
-from tkinter import *
-from tkinter import ttk
 from tkinter import messagebox
-import tkinter
-from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showerror
 from tkinter import Tk, Menu, messagebox, filedialog, ttk, Label, scrolledtext, INSERT, END, Button, Scrollbar, RIGHT, Y, Frame, Canvas, HORIZONTAL, VERTICAL, simpledialog, Text
-
+import tkinter
+from tkinter import *
+from tkinter import ttk
+from tkinter.filedialog import askopenfilename
+import tkinter as tk
+import tkinter.font as tkFont
 
 errores = []
+extencion = []
 reservadas = {
     'print'     : 'RPRINT',
     'if'        : 'RIF',
@@ -34,7 +37,9 @@ tokens  = [
     'LLAVEA',
     'LLAVEC',
     'MAS',
+    'MASMAS',
     'MENOS',
+    'MENOSMENOS',
     'POR',
     'DIV',
     'MOD',
@@ -63,7 +68,9 @@ t_PARC          = r'\)'
 t_LLAVEA        = r'{'
 t_LLAVEC        = r'}'
 t_MAS           = r'\+'
+t_MASMAS        = r'\+\+'
 t_MENOS         = r'-'
+t_MENOSMENOS    = r'--'
 t_POR           = r'\*'
 t_DIV           = r'/'
 t_MOD           = r'%'
@@ -97,36 +104,38 @@ def t_ENTERO(t):
         t.value = 0
     return t
 
+def t_COMENTARIO_MULT(t):
+    r'\#\*(.|\n)*?\*\#'
+    t.lexer.lineno += 1
+
+def t_COMENTARIO_SIMPLE(t):
+    r'\#.*\n'
+    t.lexer.lineno += 1
+
 def t_ID(t):
      r'[a-zA-Z][a-zA-Z_0-9]*'
      t.type = reservadas.get(t.value.lower(),'ID')
      return t
 
 def t_CADENA(t):
-    r'(\".*?\")'
-    t.value = t.value[1:-1] 
-    return t
-
-def t_CARACTER(t):
-    r'(\'.?\')'
-    t.value = t.value[1:-1] 
-    return t
-
-def t_SCAPE_STRING(t):
     r'\"(\\"|.)*?\"'
+    t.value = t.value[1:-1]
     t.value = t.value.replace('\\t', '\t')
     t.value = t.value.replace('\\n', '\n')
     t.value = t.value.replace("\\'", "\'")
+    t.value = t.value.replace('\\"', '\"')
     t.value = t.value.replace('\\\\', '\\')
     return t
 
-def t_COMENTARIO_MULT(t):
-    r'\#\*(.|\n)*\*\#'
-    t.lexer.lineno += 1
-
-def t_COMENTARIO_SIMPLE(t):
-    r'\#.*\n'
-    t.lexer.lineno += 1
+def t_CARACTER(t):
+    r"""\'(\\'|\\\\|\\n|\\t|\\r|\\"|[^\\\'\"])?\'"""
+    t.value = t.value[1:-1]
+    t.value = t.value.replace('\\t', '\t')
+    t.value = t.value.replace('\\n', '\n')
+    t.value = t.value.replace("\\'", "\'")
+    t.value = t.value.replace('\\"', '\"')
+    t.value = t.value.replace('\\\\', '\\')
+    return t
 
 t_ignore = " \t"
 
@@ -154,7 +163,7 @@ precedence = (
     ('left','MAS','MENOS'),
     ('left','DIV','POR','MOD'),
     ('left','POT'),
-    ('right','UMENOS'),
+    ('right','UMENOS','MASMAS','MENOSMENOS'),
     )
 
 
@@ -197,9 +206,7 @@ def p_instrucciones_instruccion(t) :
 
 def p_instruccion(t) :
     '''instruccion      : imprimir_instr finins
-                        | declaracion_instr_simple finins
-                        | declaracion_instr_completa finins
-                        | asignacion_instr finins
+                        | declaraciones finins
                         | if_instr
                         | while_instr
                         | break_instr finins
@@ -222,6 +229,12 @@ def p_instruccion_error(t):
 def p_imprimir(t) :
     'imprimir_instr     : RPRINT PARA expresion PARC'
     t[0] = Imprimir(t[3], t.lineno(1), find_column(input, t.slice[1]))
+
+def p_declaraciones(t):
+    '''declaraciones    : declaracion_instr_simple 
+                        | declaracion_instr_completa 
+                        | asignacion_instr'''
+    t[0] = t[1]
 
 #///////////////////////////////////////DECLARACION COMPLETA//////////////////////////////////////////////////
 
@@ -263,9 +276,13 @@ def p_while(t) :
     'while_instr     : RWHILE PARA expresion PARC LLAVEA instrucciones LLAVEC'
     t[0] = While(t[3], t[6], t.lineno(1), find_column(input, t.slice[1]))
 
+#///////////////////////////////////////FOR//////////////////////////////////////////////////
+
 def p_for(t) :
-    'for_instr     : RFOR PARA declaracion_instr_completa PUNTOCOMA expresion PUNTOCOMA incremento_decremento_instr PARC LLAVEA instrucciones LLAVEC'
+    'for_instr     : RFOR PARA declaraciones PUNTOCOMA expresion PUNTOCOMA incremento_decremento_instr PARC LLAVEA instrucciones LLAVEC'
     t[0] =  For(t[3], t[5],t[7],t[10], t.lineno(1), find_column(input, t.slice[1]))
+
+
 
 #///////////////////////////////////////BREAK//////////////////////////////////////////////////
 
@@ -282,9 +299,9 @@ def p_main(t):
 
 def p_expresion_binaria(t):
     '''
-    expresion : expresion MAS MAS
+    expresion : expresion MASMAS
             | expresion MAS expresion
-            | expresion MENOS MENOS
+            | expresion MENOSMENOS
             | expresion MENOS expresion
             | expresion POR expresion
             | expresion DIV expresion
@@ -299,11 +316,11 @@ def p_expresion_binaria(t):
             | expresion AND expresion
             | expresion OR expresion
     '''
-    if t[2] == '+' and t[3] == '+':
+    if t[2] == '++':
         t[0] = Aritmetica(OperadorAritmetico.INCREMENTO, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '+':
         t[0] = Aritmetica(OperadorAritmetico.MAS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
-    elif t[2] == '-' and t[3] == '-':
+    elif t[2] == '--':
         t[0] = Aritmetica(OperadorAritmetico.Decremento, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '-':
         t[0] = Aritmetica(OperadorAritmetico.MENOS, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
@@ -344,12 +361,12 @@ def p_expresion_unaria(t):
 
 def p_incremento(t):
     '''
-    incremento_decremento_instr : expresion MAS MAS 
-                                | expresion MENOS MENOS
+    incremento_decremento_instr : expresion MASMAS 
+                                | expresion MENOSMENOS
     '''
-    if t[2] == '+' and t[3] == '+':
+    if t[2] == '++':
         t[0] = Incremento(OperadorAritmetico.INCREMENTO, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
-    elif t[2] == '-' and t[3] == '-':
+    elif t[2] == '--':
         t[0] = Incremento(OperadorAritmetico.Decremento, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
 
 def p_expresion_agrupacion(t):
@@ -416,16 +433,16 @@ from TS.TablaSimbolos import TablaSimbolos
 def analizar():
     entrada = Text1.get(1.0,END)
 
-    instrucciones = parse(entrada.lower()) #ARBOL AST
+    instrucciones = parse(entrada) #ARBOL AST
     ast = Arbol(instrucciones)
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)
     
-    for error in errores:                   # CAPTURA DE ERRORES LEXICOS Y SINTACTICOS
+    for error in errores:                  
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
 
-    for instruccion in ast.getInstrucciones():      # 1ERA PASADA (DECLARACIONES Y ASIGNACIONES)
+    for instruccion in ast.getInstrucciones():     
         if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion):
             value = instruccion.interpretar(ast,TSGlobal)
             if isinstance(value, Excepcion) :
@@ -436,11 +453,11 @@ def analizar():
                 ast.getExcepciones().append(err)
                 ast.updateConsola(err.toString())
             
-    for instruccion in ast.getInstrucciones():      # 2DA PASADA (MAIN)
+    for instruccion in ast.getInstrucciones():     
         contador = 0
         if isinstance(instruccion, Main):
             contador += 1
-            if contador == 2: # VERIFICAR LA DUPLICIDAD
+            if contador == 2: 
                 err = Excepcion("Semantico", "Existen 2 funciones Main", instruccion.fila, instruccion.columna)
                 ast.getExcepciones().append(err)
                 ast.updateConsola(err.toString())
@@ -454,12 +471,30 @@ def analizar():
                 ast.getExcepciones().append(err)
                 ast.updateConsola(err.toString())
 
-    for instruccion in ast.getInstrucciones():    # 3ERA PASADA (SENTENCIAS FUERA DE MAIN)
+    for instruccion in ast.getInstrucciones():  
         if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)):
             err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())
-    print(ast.getConsola())
+    
+    salida.delete(1.0,END)
+    s = ast.getConsola()
+    print(s)
+    salida.insert(INSERT,s)
+#END
+
+def load_file():
+    name = askopenfilename(initialdir="C:/Users/Batman/Documents/Programming/tkinter/",
+                           filetypes =(("Text File", "*.jpr"),("All Files","*.*")),
+                           title = "Choose a file."
+                           )
+    try:
+        with open(name,'r') as UseFile:
+            Text1.delete(1.0,END)
+            texto = UseFile.read()
+            Text1.insert(INSERT,texto)
+    except:
+        print("No file exists")
 #END
 
 def close_window (): 
@@ -467,7 +502,9 @@ def close_window ():
 #END
 
 app = Tk()
+app.geometry("1350x500")
 app.title("Proyecto")
+
 Vp = Frame(app)
 menubar = Menu(app)
 
@@ -476,7 +513,7 @@ Vp.grid(column = 0, row = 0,padx =(70,70), pady=(10,10))
 filemenu = Menu(menubar)
 filemenu = Menu(menubar)
 filemenu.add_command(label="Nuevo")
-filemenu.add_command(label="Abrir")
+filemenu.add_command(label="Abrir", command = load_file)
 filemenu.add_command(label="Guardar")
 filemenu.add_command(label="Guardar Como")
 filemenu.add_command(label="Ejecutar Analizar", command = analizar)
@@ -486,8 +523,9 @@ menubar.add_cascade(label="File", menu=filemenu)
 
 app.config(menu=menubar)
 
-
+fontExample = tkFont.Font(family="Arial", size=11, weight="bold")
 Text1 = tkinter.Text()
+Text1.configure(font=fontExample)
 Text1.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
 
 scrollb = ttk.Scrollbar(command = Text1.yview)
@@ -495,6 +533,8 @@ scrollb.grid(row=0, column=1, sticky='nsew')
 Text1['yscrollcommand'] = scrollb.set
 
 salida = tkinter.Text()
+
+salida.configure(font = fontExample)
 salida.grid(row=0, column=2, sticky="nsew", padx=2, pady=2)
 
 scrollb = ttk.Scrollbar(command = salida.yview)
