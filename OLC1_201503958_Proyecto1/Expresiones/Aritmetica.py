@@ -129,28 +129,16 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.DIV:
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                if self.OperacionDer.valor != 0:
-                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
-                else:
-                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                if self.OperacionDer.valor != 0:
-                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
-                else:
-                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.DECIMAL
-                if self.OperacionDer.valor != 0:
-                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
-                else:
-                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                if self.OperacionDer.valor != 0:
-                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
-                else:
-                    return Excepcion("Semantico", "Divisor = 0", self.fila, self.columna)
+                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para /.", self.fila, self.columna)
  #-----------------------------------------------POTENCIA-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.POT:

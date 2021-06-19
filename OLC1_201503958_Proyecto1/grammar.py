@@ -433,7 +433,7 @@ from TS.TablaSimbolos import TablaSimbolos
 def analizar():
     entrada = Text1.get(1.0,END)
 
-    instrucciones = parse(entrada) #ARBOL AST
+    instrucciones = parse(entrada) 
     ast = Arbol(instrucciones)
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)

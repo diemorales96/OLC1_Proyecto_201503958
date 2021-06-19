@@ -5,8 +5,6 @@ from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO
 from TS.TablaSimbolos import TablaSimbolos
 from Instrucciones.Break import Break
-from TS.Simbolo import Simbolo
-from Instrucciones.Incremento import Incremento
 
 class For(Instruccion):
     def __init__(self, declaraciones, condicion, incremento, instrucciones, fila, columna):
@@ -18,25 +16,25 @@ class For(Instruccion):
         self.columna = columna
 
     def interpretar(self, tree, table):
-        
-        declaracion = self.declaraciones.interpretar(tree,table)
+        nTabla = TablaSimbolos(table) 
+        declaracion = self.declaraciones.interpretar(tree,nTabla)
         if isinstance(declaracion,Declaracion): return None
         if isinstance(declaracion,Asignacion): return None
 
         while True:
-            condicion = self.condicion.interpretar(tree, table)
+            condicion = self.condicion.interpretar(tree, nTabla)
             if isinstance(condicion, Excepcion): return condicion
 
             if self.condicion.tipo == TIPO.BOOLEANO:
-                if bool(condicion) == True:   # VERIFICA SI ES VERDADERA LA CONDICION
-                    nuevaTabla = TablaSimbolos(table)       #NUEVO ENTORNO
+                if bool(condicion) == True:   
+                    nuevaTabla = TablaSimbolos(nTabla)      
                     for instruccion in self.instrucciones:
-                        result = instruccion.interpretar(tree, nuevaTabla) #EJECUTA INSTRUCCION ADENTRO DEL IF
+                        result = instruccion.interpretar(tree, nuevaTabla)
                         if isinstance(result, Excepcion) :
                             tree.getExcepciones().append(result)
                             tree.updateConsola(result.toString())
                         if isinstance(result, Break): return None
-                    self.incremento.interpretar(tree,table)
+                    self.incremento.interpretar(tree,nTabla)
                 else:
                     break
             else:

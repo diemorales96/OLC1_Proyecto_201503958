@@ -18,7 +18,7 @@ class TablaSimbolos:
 
     def getTabla(self, id):      
         tablaActual = self
-        while tablaActual.tabla != None:
+        while tablaActual != None:
             if id.lower() in tablaActual.tabla :
                 return tablaActual.tabla[id.lower()]         
             else:
