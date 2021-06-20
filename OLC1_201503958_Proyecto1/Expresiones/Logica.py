@@ -22,20 +22,26 @@ class Logica(Instruccion):
         if self.operador == OperadorLogico.AND:
             if self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) and self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion &&.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para &&.", self.fila, self.columna)
             #END
         elif self.operador == OperadorLogico.OR:
             if self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) or self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion ||.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para ||.", self.fila, self.columna)
             #END
         elif self.operador == OperadorLogico.NOT:
             if self.OperacionIzq.tipo == TIPO.BOOLEANO:
                 return not self.obtenerVal(self.OperacionIzq.tipo, izq)
+            elif self.OperacionIzq.tipo == TIPO.NULO:
+                return Excepcion("Semantico", "Null pointer para expresion !.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para !.", self.fila, self.columna)
             #END
         #END
-        return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna)
+        return Excepcion("Semantico", "Tipo de Operacion Logica no Especificado.", self.fila, self.columna)
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

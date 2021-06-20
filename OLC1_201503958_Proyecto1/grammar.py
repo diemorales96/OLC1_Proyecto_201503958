@@ -3,7 +3,7 @@ from Instrucciones.Main import Main
 import re
 import os
 from TS.Excepcion import Excepcion
-
+import webbrowser
 from tkinter import messagebox
 from tkinter.messagebox import showerror
 from tkinter import Tk, Menu, messagebox, filedialog, ttk, Label, scrolledtext, INSERT, END, Button, Scrollbar, RIGHT, Y, Frame, Canvas, HORIZONTAL, VERTICAL, simpledialog, Text
@@ -14,11 +14,12 @@ from tkinter.filedialog import askopenfilename
 import tkinter as tk
 import tkinter.font as tkFont
 
+#///////////////////////////////////////ANALISIS LEXICO//////////////////////////////////////////
 errores = []
-extencion = []
 reservadas = {
     'print'     : 'RPRINT',
     'if'        : 'RIF',
+    'case'      : 'RCASE',
     'for'       : 'RFOR',
     'else'      : 'RELSE',
     'while'     : 'RWHILE',
@@ -58,7 +59,8 @@ tokens  = [
     'ENTERO',
     'CADENA',
     'CARACTER',
-    'ID'
+    'ID',
+    'DOSPUNTOS'
 ] + list(reservadas.values())
 
 # Tokens
@@ -85,6 +87,7 @@ t_IGUAL         = r'='
 t_AND           = r'&&'
 t_OR            = r'\|\|'
 t_NOT           = r'!'
+t_DOSPUNTOS     = r':'
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -154,12 +157,13 @@ def find_column(inp, token):
 import ply.lex as lex
 lexer = lex.lex(reflags= re.IGNORECASE)
 
+#///////////////////////////////////////PRECEDENCIA/ANALISIS SINTACTICO//////////////////////////////////////////
 
 precedence = (
     ('left','OR'),
     ('left','AND'),
     ('right','UNOT'),
-    ('left','MENORQUE','MAYORQUE', 'IGUALIGUAL','DIFERENTE'), 
+    ('left','MENORQUE','MAYORQUE', 'IGUALIGUAL','DIFERENTE','MENORIGUAL','MAYORIGUAL'), 
     ('left','MAS','MENOS'),
     ('left','DIV','POR','MOD'),
     ('left','POT'),
@@ -219,7 +223,7 @@ def p_finins(t) :
     '''finins       : PUNTOCOMA
                     | '''
     t[0] = None
-
+#///////////////////////////////////////RECUPERACION//////////////////////////////////////////
 def p_instruccion_error(t):
     'instruccion        : error PUNTOCOMA'
     errores.append(Excepcion("Sintáctico","Error Sintáctico." + str(t[1].value) , t.lineno(1), find_column(input, t.slice[1])))
@@ -229,7 +233,7 @@ def p_instruccion_error(t):
 def p_imprimir(t) :
     'imprimir_instr     : RPRINT PARA expresion PARC'
     t[0] = Imprimir(t[3], t.lineno(1), find_column(input, t.slice[1]))
-
+#///////////////////////////////////////DECLARACIONES/ASIGNACIONES//////////////////////////////////////////
 def p_declaraciones(t):
     '''declaraciones    : declaracion_instr_simple 
                         | declaracion_instr_completa 
@@ -270,6 +274,15 @@ def p_if3(t) :
     'if_instr     : RIF PARA expresion PARC LLAVEA instrucciones LLAVEC RELSE if_instr'
     t[0] = If(t[3], t[6], None, t[9], t.lineno(1), find_column(input, t.slice[1]))
 
+#///////////////////////////////////////SWITCH//////////////////////////////////////////////////
+
+#def p_switch(t):
+#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA case_list LLAVEC'
+#    t[0] = SWITCH(t[3],t[6],t.lineno(1),find_column(input,t.slice[1]))
+#def p_case(t):
+#    'case_list  : RCASE expresion DOSPUNTOS instrucciones'
+#    t[0] = CASE(t[2],t[4], t.lineno(1),find_column(input,t.slice[1]))
+
 #///////////////////////////////////////WHILE//////////////////////////////////////////////////
 
 def p_while(t) :
@@ -283,13 +296,13 @@ def p_for(t) :
     t[0] =  For(t[3], t[5],t[7],t[10], t.lineno(1), find_column(input, t.slice[1]))
 
 
-
 #///////////////////////////////////////BREAK//////////////////////////////////////////////////
 
 def p_break(t) :
     'break_instr     : RBREAK'
     t[0] = Break(t.lineno(1), find_column(input, t.slice[1]))
 
+#///////////////////////////////////////MAIN//////////////////////////////////////////
 
 def p_main(t):
     'main_instr     : RMAIN PARA PARC LLAVEA instrucciones LLAVEC'
@@ -332,14 +345,14 @@ def p_expresion_binaria(t):
         t[0] = Aritmetica(OperadorAritmetico.POT, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '%':
         t[0] = Aritmetica(OperadorAritmetico.MOD, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
-    elif t[2] == '<':
-        t[0] = Relacional(OperadorRelacional.MENORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
-    elif t[2] == '>':
-        t[0] = Relacional(OperadorRelacional.MAYORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '<=':
         t[0] = Relacional(OperadorRelacional.MENORIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '>=':
         t[0] = Relacional(OperadorRelacional.MAYORIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '<':
+        t[0] = Relacional(OperadorRelacional.MENORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
+    elif t[2] == '>':
+        t[0] = Relacional(OperadorRelacional.MAYORQUE, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '==':
         t[0] = Relacional(OperadorRelacional.IGUALIGUAL, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '=!':
@@ -349,6 +362,7 @@ def p_expresion_binaria(t):
     elif t[2] == '||':
         t[0] = Logica(OperadorLogico.OR, t[1],t[3], t.lineno(2), find_column(input, t.slice[2]))
 
+#///////////////////////////////////////UNARIO//////////////////////////////////////////
 def p_expresion_unaria(t):
     '''
     expresion : MENOS expresion %prec UMENOS 
@@ -358,7 +372,7 @@ def p_expresion_unaria(t):
         t[0] = Aritmetica(OperadorAritmetico.UMENOS, t[2],None, t.lineno(1), find_column(input, t.slice[1]))
     elif t[1] == '!':
         t[0] = Logica(OperadorLogico.NOT, t[2],None, t.lineno(1), find_column(input, t.slice[1]))
-
+#///////////////////////////////////////INCREMENTO Y DECREMENTO//////////////////////////////////////////
 def p_incremento(t):
     '''
     incremento_decremento_instr : expresion MASMAS 
@@ -368,13 +382,13 @@ def p_incremento(t):
         t[0] = Incremento(OperadorAritmetico.INCREMENTO, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
     elif t[2] == '--':
         t[0] = Incremento(OperadorAritmetico.Decremento, t[1],None, t.lineno(2), find_column(input, t.slice[2]))
-
+#///////////////////////////////////////AGRUPACIONES//////////////////////////////////////////
 def p_expresion_agrupacion(t):
     '''
     expresion :   PARA expresion PARC 
     '''
     t[0] = t[2]
-
+#///////////////////////////////////////PRIMITIVOS//////////////////////////////////////////
 def p_expresion_identificador(t):
     '''expresion : ID'''
     t[0] = Identificador(t[1], t.lineno(1), find_column(input, t.slice[1]))
@@ -429,7 +443,6 @@ def parse(inp) :
 
 from TS.Arbol import Arbol
 from TS.TablaSimbolos import TablaSimbolos
-
 def analizar():
     entrada = Text1.get(1.0,END)
 
@@ -476,12 +489,39 @@ def analizar():
             err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())
-    
+
+    ReporteTabla(ast.getExcepciones())
     salida.delete(1.0,END)
     s = ast.getConsola()
     print(s)
     salida.insert(INSERT,s)
 #END
+
+def ReporteTabla(Errores):
+    cadena = "<html>\n <head> <head>\n<body>\n<center>\n<table border=\"1\" class = \"egt\">\n\t"
+    cadena = cadena + "\n\t\t<th>No.</th>\n\t\t<th>Fila</th>\n\t\t<th>Columna</th>\n\t\t<th>Descripcion</th>\n\t\t<th>Tipo de Error.</th>\n\t</tr>\n" 
+    cont = 1
+    for a in Errores:
+        cadena = cadena + "<tr>\n\t\t<td>"+ str(cont) +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a.fila) +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a.columna) +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ a.descripcion +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ a.tipo +"</td>\n"
+    cont += 1
+    cadena = cadena +"</table>\n</body>\n</html>"
+    crearArchivo(cadena,".")
+
+def crearArchivo(cadena,path):
+        try:
+            os.stat(path.strip())
+        except:
+            os.makedirs(path.strip())
+        with open(path+"Reporte Errores.html","w+") as file:
+            file.seek(0,0)
+            file.write(cadena)
+            file.close()
+        #END
+    #END
 
 def load_file():
     name = askopenfilename(initialdir="C:/Users/Batman/Documents/Programming/tkinter/",
@@ -489,13 +529,17 @@ def load_file():
                            title = "Choose a file."
                            )
     try:
-        with open(name,'r') as UseFile:
+        with open(name,'r',encoding="utf-8") as UseFile:
             Text1.delete(1.0,END)
             texto = UseFile.read()
             Text1.insert(INSERT,texto)
     except:
         print("No file exists")
 #END
+
+def mostrar_Reporte():
+    webbrowser.open_new_tab('.Reporte Errores.html')
+
 
 def close_window (): 
     app.destroy()
@@ -517,15 +561,17 @@ filemenu.add_command(label="Abrir", command = load_file)
 filemenu.add_command(label="Guardar")
 filemenu.add_command(label="Guardar Como")
 filemenu.add_command(label="Ejecutar Analizar", command = analizar)
+filemenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
 filemenu.add_command(label="Salir",command = close_window)
 
 menubar.add_cascade(label="File", menu=filemenu)
 
 app.config(menu=menubar)
 
-fontExample = tkFont.Font(family="Arial", size=11, weight="bold")
+fontInput = tkFont.Font(family="Courier New", size=10, weight="bold")
+fontOutput = tkFont.Font(family="Courier New", size=10)
 Text1 = tkinter.Text()
-Text1.configure(font=fontExample)
+Text1.configure(font=fontInput)
 Text1.grid(row=0, column=0, sticky="nsew", padx=2, pady=2)
 
 scrollb = ttk.Scrollbar(command = Text1.yview)
@@ -534,7 +580,7 @@ Text1['yscrollcommand'] = scrollb.set
 
 salida = tkinter.Text()
 
-salida.configure(font = fontExample)
+salida.configure(font = fontOutput,background = '#0000D6',foreground = 'white')
 salida.grid(row=0, column=2, sticky="nsew", padx=2, pady=2)
 
 scrollb = ttk.Scrollbar(command = salida.yview)

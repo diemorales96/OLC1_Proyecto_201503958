@@ -30,6 +30,8 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) < self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) < self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion <.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para <.", self.fila, self.columna)
  #---------------------------------------------------------MAYORQUE--------------------------------------------
         elif self.operador == OperadorRelacional.MAYORQUE:
@@ -43,6 +45,8 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) > self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) > self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion >.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para >.", self.fila, self.columna)
  #---------------------------------------------------------IGUAL IGUAL--------------------------------------------
         elif self.operador == OperadorRelacional.IGUALIGUAL:
@@ -72,6 +76,8 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) == self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.CADENA:
                 return str(self.obtenerVal(self.OperacionIzq.tipo, izq)).lower() == self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion ==.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para ==.", self.fila, self.columna)
  #---------------------------------------------------------DIFERENTE--------------------------------------------
         elif self.operador == OperadorRelacional.DIFERENTE:
@@ -101,7 +107,9 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) != self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.CADENA:
                 return str(self.obtenerVal(self.OperacionIzq.tipo, izq)).lower() != self.obtenerVal(self.OperacionDer.tipo, der)
-            return Excepcion("Semantico", "Tipo Erroneo de operacion para ==.", self.fila, self.columna)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion =!.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para =!.", self.fila, self.columna)
 #---------------------------------------------------------MAYORIGUAL--------------------------------------------
         elif self.operador == OperadorRelacional.MAYORIGUAL:
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
@@ -114,7 +122,9 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) >= self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) >= self.obtenerVal(self.OperacionDer.tipo, der)
-            return Excepcion("Semantico", "Tipo Erroneo de operacion para >.", self.fila, self.columna)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion >=.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para >=.", self.fila, self.columna)
  #---------------------------------------------------------MENORIGUAL--------------------------------------------
         elif self.operador == OperadorRelacional.MENORIGUAL:
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
@@ -127,8 +137,10 @@ class Relacional(Instruccion):
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) <= self.obtenerVal(self.OperacionDer.tipo, der)
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) <= self.obtenerVal(self.OperacionDer.tipo, der)
-            return Excepcion("Semantico", "Tipo Erroneo de operacion para >.", self.fila, self.columna)
-        return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna) 
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion <=.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de operacion para <=.", self.fila, self.columna)
+        return Excepcion("Semantico", "Tipo de Operacion Relacional no Especificado.", self.fila, self.columna) 
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

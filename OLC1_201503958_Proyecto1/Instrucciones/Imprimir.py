@@ -16,7 +16,8 @@ class Imprimir(Instruccion):
 
         if self.expresion.tipo == TIPO.ARREGLO:
             return Excepcion("Semantico", "No se puede imprimir un arreglo completo", self.fila, self.columna)
-        
+        elif self.expresion.tipo == TIPO.NULO:
+            return Excepcion("Semantico", "Null pointer, no se puede imprimir tipo NULL", self.fila, self.columna)
         tree.updateConsola(value)
         return None
     

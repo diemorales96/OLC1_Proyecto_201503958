@@ -82,6 +82,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.BOOLEANO:
                 self.tipo = TIPO.ENTERO
                 return   int(self.obtenerVal(self.OperacionIzq.tipo, izq)) + int(self.obtenerVal(self.OperacionDer.tipo, der))                             
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion +.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para +.", self.fila, self.columna)
     #-----------------------------------------------RESTA-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.MENOS: 
@@ -109,6 +111,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.BOOLEANO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return int(self.obtenerVal(self.OperacionIzq.tipo, izq)) - self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion -.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para -.", self.fila, self.columna)
  #-----------------------------------------------MULTIPLICACION-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.POR:
@@ -124,6 +128,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) * self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion *.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para *.", self.fila, self.columna)
  #-----------------------------------------------DIVISION-----------------------------------------------------------------
         elif self.operador == OperadorAritmetico.DIV:
@@ -139,6 +145,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion /.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para /.", self.fila, self.columna)
  #-----------------------------------------------POTENCIA-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.POT:
@@ -154,6 +162,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) ** self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion **.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para **.", self.fila, self.columna) 
  #-----------------------------------------------MODULO-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.MOD:
@@ -169,6 +179,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+            elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
+                return Excepcion("Semantico", "Null pointer para expresion %.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para %.", self.fila, self.columna)            
  #-----------------------------------------------NEGACION UNARIA-----------------------------------------------------------
         elif self.operador == OperadorAritmetico.UMENOS: 
@@ -178,6 +190,8 @@ class Aritmetica(Instruccion):
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
                 return - self.obtenerVal(self.OperacionIzq.tipo, izq)
+            elif self.OperacionIzq.tipo == TIPO.NULO:
+                return Excepcion("Semantico", "Null pointer para expresion - unario.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para - unario.", self.fila, self.columna)
  #---------------------------------------------Incremento--------------------------------------------------------------------
         elif self.operador == OperadorAritmetico.INCREMENTO:    
@@ -191,6 +205,8 @@ class Aritmetica(Instruccion):
                 simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq +1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)+1
+            elif self.OperacionIzq.tipo == TIPO.NULO:
+                return Excepcion("Semantico", "Null pointer para expresion Incremento.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para Incremento.", self.fila, self.columna)    
  #---------------------------------------------DECREMENTO--------------------------------------------------------------------
         elif self.operador == OperadorAritmetico.Decremento:    
@@ -204,8 +220,10 @@ class Aritmetica(Instruccion):
                 simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq -1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)-1
+            elif self.OperacionIzq.tipo == TIPO.NULO:
+                return Excepcion("Semantico", "Null pointer para expresion Decremento.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para Decremento.", self.fila, self.columna)    
-        return Excepcion("Semantico", "Tipo de Operacion no Especificado.", self.fila, self.columna)
+        return Excepcion("Semantico", "Tipo de Operacion Aritmetica no Especificado.", self.fila, self.columna)
 
 
 
