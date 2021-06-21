@@ -16,6 +16,7 @@ import tkinter.font as tkFont
 
 #///////////////////////////////////////ANALISIS LEXICO//////////////////////////////////////////
 errores = []
+extencion = ""
 reservadas = {
     'print'     : 'RPRINT',
     'if'        : 'RIF',
@@ -109,7 +110,7 @@ def t_ENTERO(t):
 
 def t_COMENTARIO_MULT(t):
     r'\#\*(.|\n)*?\*\#'
-    t.lexer.lineno += 1
+    t.lexer.lineno += t.value.count('\n')
 
 def t_COMENTARIO_SIMPLE(t):
     r'\#.*\n'
@@ -276,12 +277,37 @@ def p_if3(t) :
 
 #///////////////////////////////////////SWITCH//////////////////////////////////////////////////
 
-#def p_switch(t):
+#def p_switch1(t):
+#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA case_list RDEFAULT DOSPUNTOS instrucciones LLAVEC'
+#    t[0] = SWITCH(t[3],t[6],t[9], t.lineno(2),find_column(input,t.slice[2]))
+
+#def p_switch2(t):
 #    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA case_list LLAVEC'
-#    t[0] = SWITCH(t[3],t[6],t.lineno(1),find_column(input,t.slice[1]))
+#    t[0] = SWITCH(t[3],t[6],None,t.lineno(2),find_column(input,t.slice[2]))
+
+#def p_switch3(t):
+#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA RDEFAULT DOSPUNTOS instrucciones LLAVEC'
+#    t[0] = SWITCH(t[3],None,t[8],t.lineno(2),find_column(input,t.slice[2]))
+
 #def p_case(t):
+#    'case_list  : case_list case_instr'
+#    if t[2] != "":
+#        t[1].append(t[2])
+#    t[0] = t[1]
+
+#def p_caseInstrucciones(t):
+#    'case_list  : case_instr'
+#    if t[1] == "":
+#       t[0] = []
+#    else:
+#    t[0] = [t[1]]
+
+#def p_caseInstruccion(t):
 #    'case_list  : RCASE expresion DOSPUNTOS instrucciones'
-#    t[0] = CASE(t[2],t[4], t.lineno(1),find_column(input,t.slice[1]))
+#    t[0] = CASE(t[2],t[4],t.lineno(1),find_column(input,t.slice[1]))
+#
+
+
 
 #///////////////////////////////////////WHILE//////////////////////////////////////////////////
 
@@ -507,7 +533,8 @@ def ReporteTabla(Errores):
         cadena = cadena + "\n\t\t<td>"+ str(a.columna) +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ a.descripcion +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ a.tipo +"</td>\n"
-    cont += 1
+        cont += 1
+    
     cadena = cadena +"</table>\n</body>\n</html>"
     crearArchivo(cadena,".")
 
@@ -524,22 +551,50 @@ def crearArchivo(cadena,path):
     #END
 
 def load_file():
-    name = askopenfilename(initialdir="C:/Users/Batman/Documents/Programming/tkinter/",
-                           filetypes =(("Text File", "*.jpr"),("All Files","*.*")),
-                           title = "Choose a file."
-                           )
-    try:
-        with open(name,'r',encoding="utf-8") as UseFile:
-            Text1.delete(1.0,END)
-            texto = UseFile.read()
-            Text1.insert(INSERT,texto)
-    except:
-        print("No file exists")
+    
+           fname = askopenfilename(filetypes=(("", ""),
+                                              ("Jpr","*.jpr") ))
+           if fname:
+               try:
+                   Text1.delete(1.0,END)
+                   global extencion
+                   archivo = open(fname,"r",encoding="utf-8")
+                   texto = archivo.read()
+                   extencion = fname
+                   print(extencion[1])
+                   Text1.insert(INSERT,texto)
+                   archivo.close()
+               except:                    
+                   showerror("Open Source File", "Failed to read file\n'%s'" % fname)
+               return
 #END
 
 def mostrar_Reporte():
     webbrowser.open_new_tab('.Reporte Errores.html')
 
+def new():
+    global extencion 
+    Text1.delete(1.0,END)
+    extencion=""
+#END
+
+def save():
+    global extencion
+    fguardar = open(extencion,"w+",encoding="utf-8")
+    fguardar.write(Text1.get(1.0,END))
+    fguardar.close()
+    print("Archivo Guardado")    
+#END
+
+def saveAs():
+    global extencion
+    guardar = filedialog.asksaveasfilename(title = "Guardar Archivo")
+    fguardar = open(guardar+".jpr", "w+",encoding="utf-8")
+    fguardar.write(Text1.get(1.0, END))
+    fguardar.close()
+    extencion = guardar+".jpr"
+    print("Archivo Guardado")     
+#END
 
 def close_window (): 
     app.destroy()
@@ -556,13 +611,16 @@ Vp.grid(column = 0, row = 0,padx =(70,70), pady=(10,10))
 
 filemenu = Menu(menubar)
 filemenu = Menu(menubar)
-filemenu.add_command(label="Nuevo")
+filemenu.add_command(label="Nuevo", command = new)
 filemenu.add_command(label="Abrir", command = load_file)
-filemenu.add_command(label="Guardar")
-filemenu.add_command(label="Guardar Como")
+filemenu.add_command(label="Guardar", command = save)
+filemenu.add_command(label="Guardar Como",command = saveAs)
 filemenu.add_command(label="Ejecutar Analizar", command = analizar)
 filemenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
 filemenu.add_command(label="Salir",command = close_window)
+
+
+
 
 menubar.add_cascade(label="File", menu=filemenu)
 
@@ -583,8 +641,8 @@ salida = tkinter.Text()
 salida.configure(font = fontOutput,background = '#0000D6',foreground = 'white')
 salida.grid(row=0, column=2, sticky="nsew", padx=2, pady=2)
 
-scrollb = ttk.Scrollbar(command = salida.yview)
-scrollb.grid(row=0, column=3, sticky='nsew')
+scrollb2 = ttk.Scrollbar(command = salida.yview)
+scrollb2.grid(row=0, column=3, sticky='nsew')
 salida['yscrollcommand'] = scrollb.set
 
 app.mainloop()

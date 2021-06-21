@@ -135,16 +135,28 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.DIV:
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) / self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
                 return Excepcion("Semantico", "Null pointer para expresion /.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para /.", self.fila, self.columna)
@@ -169,16 +181,28 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.MOD:
             if self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.ENTERO and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif self.OperacionIzq.tipo == TIPO.DECIMAL and self.OperacionDer.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                if self.obtenerVal(self.OperacionDer.tipo, der) != 0:
+                    return self.obtenerVal(self.OperacionIzq.tipo, izq) % self.obtenerVal(self.OperacionDer.tipo, der)
+                else:
+                    return Excepcion("Semantico", "No se puede dividir un nuemero entre 0.", self.fila, self.columna)
             elif (self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo != TIPO.NULO)or(self.OperacionIzq.tipo != TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO)or(self.OperacionIzq.tipo == TIPO.NULO and self.OperacionDer.tipo == TIPO.NULO):
                 return Excepcion("Semantico", "Null pointer para expresion %.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de operacion para %.", self.fila, self.columna)            

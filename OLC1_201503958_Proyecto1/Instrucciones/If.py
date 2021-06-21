@@ -19,19 +19,19 @@ class If(Instruccion):
         if isinstance(condicion, Excepcion): return condicion
 
         if self.condicion.tipo == TIPO.BOOLEANO:
-            if bool(condicion) == True:   # VERIFICA SI ES VERDADERA LA CONDICION
-                nuevaTabla = TablaSimbolos(table)       #NUEVO ENTORNO
+            if bool(condicion) == True:  
+                nuevaTabla = TablaSimbolos(table)    
                 for instruccion in self.instruccionesIf:
-                    result = instruccion.interpretar(tree, nuevaTabla) #EJECUTA INSTRUCCION ADENTRO DEL IF
+                    result = instruccion.interpretar(tree, nuevaTabla) 
                     if isinstance(result, Excepcion) :
                         tree.getExcepciones().append(result)
                         tree.updateConsola(result.toString())
                     if isinstance(result, Break): return result
-            else:               #ELSE
+            else:               
                 if self.instruccionesElse != None:
-                    nuevaTabla = TablaSimbolos(table)       #NUEVO ENTORNO
+                    nuevaTabla = TablaSimbolos(table)   
                     for instruccion in self.instruccionesElse:
-                        result = instruccion.interpretar(tree, nuevaTabla) #EJECUTA INSTRUCCION ADENTRO DEL IF
+                        result = instruccion.interpretar(tree, nuevaTabla) 
                         if isinstance(result, Excepcion) :
                             tree.getExcepciones().append(result)
                             tree.updateConsola(result.toString()) 
