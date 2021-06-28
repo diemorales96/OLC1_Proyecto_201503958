@@ -7,20 +7,20 @@ class TablaSimbolos:
     def __init__(self, anterior = None):
         self.tabla = {} 
         self.anterior = anterior
-        self.funciones = []
+        
 
-    def setTabla(self, simbolo):  
+    def setTabla(self, simbolo): 
         if simbolo.id.lower() in self.tabla :
             return Excepcion("Semantico", "Variable " + simbolo.id + " ya existe", simbolo.fila, simbolo.columna)
         else:
             self.tabla[simbolo.id.lower()] = simbolo
             return None
 
-    def getTabla(self, id):      
+    def getTabla(self, id):        
         tablaActual = self
         while tablaActual != None:
             if id.lower() in tablaActual.tabla :
-                return tablaActual.tabla[id.lower()]         
+                return tablaActual.tabla[id.lower()]   
             else:
                 tablaActual = tablaActual.anterior
         return None

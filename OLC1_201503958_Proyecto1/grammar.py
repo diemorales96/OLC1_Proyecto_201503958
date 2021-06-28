@@ -18,9 +18,13 @@ import tkinter.font as tkFont
 errores = []
 extencion = ""
 reservadas = {
+    'int'       : 'RINT',
+    'double'    : 'RDOUBLE',
+    'boolean'   : 'RBOOLEAN',
+    'string'    : 'RSTRING',
+    'char'      : 'RCHAR',
     'print'     : 'RPRINT',
     'if'        : 'RIF',
-    'case'      : 'RCASE',
     'for'       : 'RFOR',
     'else'      : 'RELSE',
     'while'     : 'RWHILE',
@@ -29,7 +33,10 @@ reservadas = {
     'break'     : 'RBREAK',
     'var'       : 'RVAR',
     'null'      : 'RNULL',
-    'main'      : 'RMAIN'
+    'main'      : 'RMAIN',
+    'func'      : 'RFUNC',
+    'return'    : 'RRETURN',
+    'continue'  : 'RCONTINUE',
 }
 
 tokens  = [
@@ -38,6 +45,7 @@ tokens  = [
     'PARC',
     'LLAVEA',
     'LLAVEC',
+    'COMA',
     'MAS',
     'MASMAS',
     'MENOS',
@@ -60,8 +68,8 @@ tokens  = [
     'ENTERO',
     'CADENA',
     'CARACTER',
-    'ID',
-    'DOSPUNTOS'
+    'ID'
+
 ] + list(reservadas.values())
 
 # Tokens
@@ -70,6 +78,7 @@ t_PARA          = r'\('
 t_PARC          = r'\)'
 t_LLAVEA        = r'{'
 t_LLAVEC        = r'}'
+t_COMA          = r','
 t_MAS           = r'\+'
 t_MASMAS        = r'\+\+'
 t_MENOS         = r'-'
@@ -88,7 +97,6 @@ t_IGUAL         = r'='
 t_AND           = r'&&'
 t_OR            = r'\|\|'
 t_NOT           = r'!'
-t_DOSPUNTOS     = r':'
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -187,6 +195,12 @@ from Instrucciones.While import While
 from Instrucciones.For import For
 from Instrucciones.Break import Break
 from Instrucciones.Incremento import Incremento
+from Instrucciones.Funcion import Funcion
+from Instrucciones.Llamada import Llamada
+from Instrucciones.Return import Return
+from Instrucciones.Continue import Continue
+from Expresiones.Casteo import Casteo
+
 
 def p_init(t) :
     'init            : instrucciones'
@@ -217,7 +231,11 @@ def p_instruccion(t) :
                         | break_instr finins
                         | incremento_decremento_instr finins
                         | for_instr
-                        | main_instr'''
+                        | main_instr
+                        | funcion_instr
+                        | llamada_instr finins
+                        | return_instr finins
+                        | continue_instr finins'''
     t[0] = t[1]
 
 def p_finins(t) :
@@ -328,13 +346,97 @@ def p_break(t) :
     'break_instr     : RBREAK'
     t[0] = Break(t.lineno(1), find_column(input, t.slice[1]))
 
+#///////////////////////////////////////CONTINUE//////////////////////////////////////////////////
+
+def p_continue(t) :
+    'continue_instr     : RCONTINUE'
+    t[0] = Continue(t.lineno(1), find_column(input, t.slice[1]))
+
 #///////////////////////////////////////MAIN//////////////////////////////////////////
 
 def p_main(t):
     'main_instr     : RMAIN PARA PARC LLAVEA instrucciones LLAVEC'
     t[0] = Main(t[5],t.lineno(1),find_column(input,t.slice[1]))
- 
-#///////////////////////////////////////EXPRESION//////////////////////////////////////////////////
+
+#///////////////////////////////////////FUNCION//////////////////////////////////////////////////
+
+def p_funcion_1(t) :
+    'funcion_instr     : RFUNC ID PARA parametros PARC LLAVEA instrucciones LLAVEC'
+    t[0] = Funcion(t[2], t[4], t[7], t.lineno(1), find_column(input, t.slice[1]))
+
+def p_funcion_2(t) :
+    'funcion_instr     : RFUNC ID PARA PARC LLAVEA instrucciones LLAVEC'
+    t[0] = Funcion(t[2],[], t[6], t.lineno(1), find_column(input, t.slice[1]))
+
+#///////////////////////////////////////PARAMETROS//////////////////////////////////////////////////
+
+def p_parametros_1(t) :
+    'parametros     : parametros COMA parametro'
+    t[1].append(t[3])
+    t[0] = t[1]
+    
+def p_parametros_2(t) :
+    'parametros    : parametro'
+    t[0] = [t[1]]
+
+#///////////////////////////////////////PARAMETRO//////////////////////////////////////////////////
+
+def p_parametro(t) :
+    'parametro     : tipo ID'
+    t[0] = {'tipo':t[1],'identificador':t[2]}
+
+#///////////////////////////////////////LLAMADA//////////////////////////////////////////////////
+
+def p_llamada1(t) :
+    'llamada_instr     : ID PARA PARC'
+    t[0] = Llamada(t[1],[], t.lineno(1), find_column(input, t.slice[1]))
+
+def p_llamada2(t) :
+    'llamada_instr     : ID PARA parametros_llamada PARC'
+    t[0] = Llamada(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
+
+#///////////////////////////////////////PARAMETROS LLAMADA A FUNCION//////////////////////////////////////////////////
+
+def p_parametrosLL_1(t) :
+    'parametros_llamada     : parametros_llamada COMA parametro_llamada'
+    t[1].append(t[3])
+    t[0] = t[1]
+    
+def p_parametrosLL_2(t) :
+    'parametros_llamada    : parametro_llamada'
+    t[0] = [t[1]]
+
+#///////////////////////////////////////PARAMETRO LLAMADA A FUNCION//////////////////////////////////////////////////
+
+def p_parametroLL(t) :
+    'parametro_llamada     : expresion'
+    t[0] = t[1]
+
+#///////////////////////////////////////LLAMADA A FUNCION//////////////////////////////////////////////////
+
+def p_return(t) :
+    'return_instr     : RRETURN expresion'
+    t[0] = Return(t[2], t.lineno(1), find_column(input, t.slice[1]))
+
+#///////////////////////////////////////TIPO//////////////////////////////////////////////////
+
+def p_tipo(t) :
+    '''tipo     : RINT
+                | RDOUBLE
+                | RCHAR
+                | RSTRING
+                | RBOOLEAN '''
+    if t[1].lower() == 'int':
+        t[0] = TIPO.ENTERO
+    elif t[1].lower() == 'double':
+        t[0] = TIPO.DECIMAL
+    elif t[1].lower() == 'string':
+       t[0] = TIPO.CADENA
+    elif t[1].lower() == 'boolean':
+        t[0] = TIPO.BOOLEANO
+    elif t[1].lower() == 'char':
+        t[0] = TIPO.CHARACTER
+
 
 def p_expresion_binaria(t):
     '''
@@ -414,6 +516,11 @@ def p_expresion_agrupacion(t):
     expresion :   PARA expresion PARC 
     '''
     t[0] = t[2]
+
+def p_expresion_llamada(t):
+    '''expresion : llamada_instr'''
+    t[0] = t[1]
+
 #///////////////////////////////////////PRIMITIVOS//////////////////////////////////////////
 def p_expresion_identificador(t):
     '''expresion : ID'''
@@ -448,6 +555,10 @@ def p_primitivo_null(t):
     '''expresion : RNULL'''
     t[0] = Primitivos(TIPO.NULO, None, t.lineno(1), find_column(input, t.slice[1]))
 
+def p_expresion_cast(t):
+    '''expresion : PARA tipo PARC expresion'''
+    t[0] = Casteo(t[2], t[4], t.lineno(1), find_column(input, t.slice[1]))
+
 import ply.yacc as yacc
 parser = yacc.yacc()
 
@@ -467,6 +578,36 @@ def parse(inp) :
     input = inp
     return parser.parse(inp)
 
+from Nativas.ToLower import ToLower
+from Nativas.ToUpper import ToUpper
+from Nativas.Length import Length
+
+def crearNativas(ast):         
+    nombre = "toupper"
+    parametros = [{'tipo':TIPO.CADENA,'identificador':'toUpper##Param1'}]
+    instrucciones = []
+    toUpper = ToUpper(nombre, parametros, instrucciones, -1, -1)
+    ast.addFuncion(toUpper)     
+
+    
+    nombre = "tolower"
+    parametros = [{'tipo':TIPO.CADENA,'identificador':'toLower##Param1'}]
+    instrucciones = []
+    toLower = ToLower(nombre, parametros, instrucciones, -1, -1)
+    ast.addFuncion(toLower)
+
+    nombre = "length"
+    parametros = [{'tipo':TIPO.CADENA,'identificador':'length##Param1'}] 
+    instrucciones = []
+    length = Length(nombre,parametros,instrucciones,-1,-1)
+    ast.addFuncion(length)
+
+    nombre = "truncate"
+    parametros = [{'tipo':TIPO.DECIMAL,'identificador':'length##Param1'}] 
+    instrucciones = []
+    length = Length(nombre,parametros,instrucciones,-1,-1)
+    ast.addFuncion(length)    
+
 from TS.Arbol import Arbol
 from TS.TablaSimbolos import TablaSimbolos
 def analizar():
@@ -476,12 +617,14 @@ def analizar():
     ast = Arbol(instrucciones)
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)
-    
+    crearNativas(ast)
     for error in errores:                  
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
 
-    for instruccion in ast.getInstrucciones():     
+    for instruccion in ast.getInstrucciones():
+        if isinstance(instruccion, Funcion):
+            ast.addFuncion(instruccion)     
         if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion):
             value = instruccion.interpretar(ast,TSGlobal)
             if isinstance(value, Excepcion) :
@@ -509,9 +652,12 @@ def analizar():
                 err = Excepcion("Semantico", "Sentencia BREAK fuera de ciclo", instruccion.fila, instruccion.columna)
                 ast.getExcepciones().append(err)
                 ast.updateConsola(err.toString())
-
+            if isinstance(value, Return): 
+                err = Excepcion("Semantico", "Sentencia Return fuera de ciclo", instruccion.fila, instruccion.columna)
+                ast.getExcepciones().append(err)
+                ast.updateConsola(err.toString())
     for instruccion in ast.getInstrucciones():  
-        if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)):
+        if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, Funcion)):
             err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())

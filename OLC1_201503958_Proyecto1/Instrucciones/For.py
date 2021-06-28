@@ -1,3 +1,4 @@
+from Instrucciones.Return import Return
 from Instrucciones.Asignacion import Asignacion
 from Instrucciones.Declaracion import Declaracion
 from Abstract.Instruccion import Instruccion
@@ -34,6 +35,7 @@ class For(Instruccion):
                             tree.getExcepciones().append(result)
                             tree.updateConsola(result.toString())
                         if isinstance(result, Break): return None
+                        if isinstance(result, Return): return result
                     self.incremento.interpretar(tree,nTabla)
                 else:
                     break

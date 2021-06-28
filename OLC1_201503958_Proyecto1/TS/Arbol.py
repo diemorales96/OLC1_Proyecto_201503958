@@ -4,7 +4,7 @@ class Arbol:
         self.excepciones = []
         self.consola = ""
         self.TSglobal = None
-
+        self.funciones = []
     def getInstrucciones(self):
         return self.instrucciones
 
@@ -31,3 +31,15 @@ class Arbol:
     
     def setTSglobal(self, TSglobal):
         self.TSglobal = TSglobal
+        
+    def getFunciones(self):
+        return self.funciones
+
+    def getFuncion(self, nombre):
+        for funcion in self.funciones:
+            if funcion.nombre == nombre:
+                return funcion
+        return None
+    
+    def addFuncion(self, funcion):
+        self.funciones.append(funcion)
