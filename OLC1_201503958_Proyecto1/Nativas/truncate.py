@@ -1,9 +1,9 @@
 from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO
 from Instrucciones.Funcion import Funcion
+import math
 
-
-class Length(Funcion):
+class Truncate(Funcion):
     def __init__(self, nombre, parametros, instrucciones, fila, columna):
         self.nombre = nombre.lower()
         self.parametros = parametros
@@ -13,11 +13,11 @@ class Length(Funcion):
         self.tipo = TIPO.NULO
     
     def interpretar(self, tree, table):
-        simbolo = table.getTabla("length##param1")
-        if simbolo == None : return Excepcion("Semantico", "No se encontró el parámetro de Length", self.fila, self.columna)
+        simbolo = table.getTabla("truncate##param1")
+        if simbolo == None : return Excepcion("Semantico", "No se encontró el parámetro de truncate", self.fila, self.columna)
 
-        if simbolo.getTipo() != TIPO.CADENA and simbolo.getTipo() != TIPO.ARREGLO:
-            return Excepcion("Semantico", "Tipo de parametro de Length No coincide.", self.fila, self.columna)
+        if simbolo.getTipo() != TIPO.ENTERO and simbolo.getTipo() != TIPO.DECIMAL:
+            return Excepcion("Semantico", "Tipo de parametro de Truncate No coincide.", self.fila, self.columna)
 
         self.tipo = simbolo.getTipo()
-        return len(simbolo.getValor())
+        return math.trunc(simbolo.getValor())

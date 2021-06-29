@@ -24,7 +24,7 @@ class Llamada(Instruccion):
            for expresion in self.parametros: 
                 resultExpresion = expresion.interpretar(tree, table)
                 if isinstance(resultExpresion, Excepcion): return resultExpresion
-                if result.parametros[contador]["identificador"].lower() == "Length##Param1":
+                if (result.parametros[contador]['identificador'].lower() == "length##param1") or (result.parametros[contador]['identificador'].lower() == "truncate##param1")or (result.parametros[contador]['identificador'].lower() == "round##param1")or (result.parametros[contador]['identificador'].lower() == "typeof##param1"):
                     result.parametros[contador]["tipo"] = expresion.tipo
                 if result.parametros[contador]["tipo"] == expresion.tipo: 
                     

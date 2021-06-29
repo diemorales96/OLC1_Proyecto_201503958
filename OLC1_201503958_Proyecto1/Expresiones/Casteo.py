@@ -24,6 +24,11 @@ class Casteo(Instruccion):
                     return float(self.obtenerVal(self.expresion.tipo, val))
                 except:
                     return Excepcion("Semantico", "No se puede castear para Float.", self.fila, self.columna)
+            elif self.expresion.tipo == TIPO.CHARACTER:
+                try:
+                    return float(ord(self.obtenerVal(self.expresion.tipo, val)))
+                except:
+                    return Excepcion("Semantico", "No se puede castear para Int.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de casteo para Double.", self.fila, self.columna)
         if self.tipo == TIPO.ENTERO:
             if self.expresion.tipo == TIPO.DECIMAL:
@@ -36,8 +41,31 @@ class Casteo(Instruccion):
                     return int(self.obtenerVal(self.expresion.tipo, val))
                 except:
                     return Excepcion("Semantico", "No se puede castear para Int.", self.fila, self.columna)
+            elif self.expresion.tipo == TIPO.CHARACTER:
+                try:
+                    return ord(self.obtenerVal(self.expresion.tipo, val))
+                except:
+                    return Excepcion("Semantico", "No se puede castear para Int.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de casteo para Int.", self.fila, self.columna)
-
+        if self.tipo == TIPO.CHARACTER:
+            if self.expresion.tipo == TIPO.ENTERO:
+                try:
+                    return chr(self.obtenerVal(self.expresion.tipo, val))
+                except:
+                    return Excepcion("Semantico", "No se puede castear para Char.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de casteo para Char.", self.fila, self.columna)
+        if self.tipo == TIPO.CADENA:
+            if self.expresion.tipo == TIPO.ENTERO:
+                try:
+                    return str(self.obtenerVal(self.expresion.tipo, val))
+                except:
+                    return Excepcion("Semantico", "No se puede castear para String.", self.fila, self.columna)
+            elif self.expresion.tipo == TIPO.DECIMAL:
+                try:
+                    return str(self.obtenerVal(self.expresion.tipo, val))
+                except:
+                    return Excepcion("Semantico", "No se puede castear para String.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de casteo para String.", self.fila, self.columna)
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

@@ -1,4 +1,5 @@
 
+from Nativas.truncate import Truncate
 from Instrucciones.Main import Main
 import re
 import os
@@ -581,6 +582,9 @@ def parse(inp) :
 from Nativas.ToLower import ToLower
 from Nativas.ToUpper import ToUpper
 from Nativas.Length import Length
+from Nativas.truncate import Truncate
+from Nativas.Round import Round
+from Nativas.Typeof import Typeof
 
 def crearNativas(ast):         
     nombre = "toupper"
@@ -597,16 +601,28 @@ def crearNativas(ast):
     ast.addFuncion(toLower)
 
     nombre = "length"
-    parametros = [{'tipo':TIPO.CADENA,'identificador':'length##Param1'}] 
+    parametros = [{'tipo':TIPO.CADENA,'identificador':'length##param1'}] 
     instrucciones = []
     length = Length(nombre,parametros,instrucciones,-1,-1)
     ast.addFuncion(length)
 
     nombre = "truncate"
-    parametros = [{'tipo':TIPO.DECIMAL,'identificador':'length##Param1'}] 
+    parametros = [{'tipo':TIPO.DECIMAL,'identificador':'truncate##param1'}] 
     instrucciones = []
-    length = Length(nombre,parametros,instrucciones,-1,-1)
-    ast.addFuncion(length)    
+    truncate = Truncate(nombre,parametros,instrucciones,-1,-1)
+    ast.addFuncion(truncate)    
+
+    nombre = "round"
+    parametros = [{'tipo':TIPO.DECIMAL,'identificador':'round##param1'}] 
+    instrucciones = []
+    round = Round(nombre,parametros,instrucciones,-1,-1)
+    ast.addFuncion(round)
+
+    nombre = "typeof"
+    parametros = [{'tipo':TIPO.NULO,'identificador':'typeof##param1'}] 
+    instrucciones = []
+    typeof = Typeof(nombre,parametros,instrucciones,-1,-1)
+    ast.addFuncion(typeof)
 
 from TS.Arbol import Arbol
 from TS.TablaSimbolos import TablaSimbolos
@@ -708,7 +724,7 @@ def load_file():
                    texto = archivo.read()
                    extencion = fname
                    print(extencion[1])
-                   Text1.insert(INSERT,texto)
+                   Text1.insert(INSERT,texto,encoding="utf-8")
                    archivo.close()
                except:                    
                    showerror("Open Source File", "Failed to read file\n'%s'" % fname)
