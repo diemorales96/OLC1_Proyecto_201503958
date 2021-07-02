@@ -21,7 +21,7 @@ class Read(Instruccion):
         return lectura
 
     def getNodo(self):
-        nodo = NodoAST("PRIMITIVO")
+        nodo = NodoAST("READ")
         return nodo
 
 class popupWindow(object):

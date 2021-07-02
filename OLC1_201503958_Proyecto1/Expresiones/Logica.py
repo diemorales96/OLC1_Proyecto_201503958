@@ -45,26 +45,17 @@ class Logica(Instruccion):
         return Excepcion("Semantico", "Tipo de Operacion Logica no Especificado.", self.fila, self.columna)
 
     def getNodo(self):
-        nodo = NodoAST("Logica")
+        nodo = NodoAST("LOGICA")
         if self.OperacionDer != None:
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
-            nodo.agregarHijoNodo(self.getOperador(self.operador.getNodo()))
+            nodo.agregarHijo(str(self.operador))
             nodo.agregarHijoNodo(self.OperacionDer.getNodo())
         else:
-            nodo.agregarHijoNodo(self.getOperador(self.operador.getNodo()))
+            nodo.agregarHijo(str(self.operador))
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
-
-    def getOperador(self,operador):
-        if operador == OperadorLogico.AND:
-            return "&&"
-        elif operador == OperadorLogico.OR:
-            return "||"
-        elif operador == OperadorLogico.NOT:
-            return "!"
-        else:
-            return None
-
-
+        
+        return nodo
+        
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:
             return int(val)

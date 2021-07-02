@@ -56,20 +56,12 @@ class Incremento(Instruccion):
         nodo = NodoAST("INCREMENTO")
         if self.OperacionDer != None:
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
-            nodo.agregarHijoNodo(self.getOperador(self.operador.getNodo()))
+            nodo.agregarHijo(self.operador)
             nodo.agregarHijoNodo(self.OperacionDer.getNodo())
         else:
-            nodo.agregarHijoNodo(self.getOperador(self.operador.getNodo()))
+            nodo.agregarHijo(self.operador)
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
-
-    def getOperador(self,operador):
-        if operador == OperadorAritmetico.INCREMENTO:
-            return "++"
-        elif operador == OperadorAritmetico.Decremento:
-            return "--"
-        else:
-            return None
-
+        return nodo
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

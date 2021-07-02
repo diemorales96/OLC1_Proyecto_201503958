@@ -47,7 +47,6 @@ class Switch(Instruccion):
                 nodo.agregarHijoNodo(instruccionesSwitch)
         return nodo
 
-
     def verificarBool(self,valor):
         if valor=='true':
             return True

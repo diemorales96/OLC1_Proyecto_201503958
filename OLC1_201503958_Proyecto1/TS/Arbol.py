@@ -1,3 +1,6 @@
+from TS.Tipo import OperadorAritmetico
+
+
 class Arbol:
     def __init__(self, instrucciones ):
         self.instrucciones = instrucciones
@@ -67,7 +70,59 @@ class Arbol:
     def recorrerAST(self, idPadre, nodoPadre):
         for hijo in nodoPadre.getHijos():
             nombreHijo = "n" + str(self.contador)
-            self.dot += nombreHijo + "[label=\"" + hijo.getValor().replace("\"", "\\\"") + "\"];\n"
+            self.dot += nombreHijo + "[label=\"" + str(self.getOperador(hijo.getValor().replace("\"", "\\\""))) + "\"];\n"
             self.dot += idPadre + "->" + nombreHijo + ";\n"
             self.contador += 1
             self.recorrerAST(nombreHijo, hijo)
+
+    def getOperador(self,operador):
+        if operador == 'OperadorAritmetico.MAS':
+            return '+'
+        elif operador == 'OperadorAritmetico.MENOS':
+            return "-"
+        elif operador == 'OperadorAritmetico.UMENOS':
+            return "-"
+        elif operador == 'OperadorAritmetico.POR':
+            return "*"
+        elif operador == 'OperadorAritmetico.DIV':
+            return "/"
+        elif operador == 'OperadorAritmetico.POT':
+            return "**"
+        elif operador == 'OperadorAritmetico.MOD':
+            return "%"
+        elif operador == 'OperadorAritmetico.INCREMENTO':
+            return "++"
+        elif operador == 'OperadorAritmetico.Decremento':
+            return "--"
+        elif operador == 'TIPO.ARREGLO':
+            return "ARREGLO"
+        elif operador == 'TIPO.BOOLEANO':
+            return "BOOLEANO"
+        elif operador == 'TIPO.CADENA':
+            return "CADENA"
+        elif operador == 'TIPO.CHARACTER':
+            return "CHARACTER"
+        elif operador == 'TIPO.DECIMAL':
+            return "DECIMAL"
+        elif operador == 'TIPO.ENTERO':
+            return "ENTERO"
+        elif operador == 'OperadorLogico.AND':
+            return "&&"
+        elif operador =='OperadorLogico.OR':
+            return "||"
+        elif operador == 'OperadorLogico.NOT':
+            return "!"
+        elif operador == 'OperadorRelacional.DIFERENTE':
+            return "=!"
+        elif operador == 'OperadorRelacional.IGUALIGUAL':
+            return "=="
+        elif operador == 'OperadorRelacional.MAYORIGUAL':
+            return ">="
+        elif operador =='OperadorRelacional.MAYORQUE':
+            return ">"
+        elif operador == 'OperadorRelacional.MENORIGUAL':
+            return "<="
+        elif operador == 'OperadorRelacional.MENORQUE':
+            return "<" 
+        else:
+            return operador

@@ -77,23 +77,9 @@ class Casteo(Instruccion):
 
     def getNodo(self):
         nodo = NodoAST("CASTEO")
-        nodo.agregarHijo(self.obtenerTipo(self.tipo))
+        nodo.agregarHijo(self.tipo)
         nodo.agregarHijoNodo(self.expresion.getNodo())
         return nodo
-
-    def obtenerTipo(self,tipo):
-        if tipo == TIPO.ARREGLO:
-            return "ARREGLO"
-        elif tipo == TIPO.BOOLEANO:
-            return "BOOLEANO"
-        elif tipo == TIPO.CADENA:
-            return "CADENA"
-        elif tipo == TIPO.CHARACTER:
-            return "CHARACTER"
-        elif tipo == TIPO.DECIMAL:
-            return "DECIMAL"
-        elif tipo == TIPO.ENTERO:
-            return "ENTERO"    
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

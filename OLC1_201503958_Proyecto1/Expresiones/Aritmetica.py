@@ -254,36 +254,13 @@ class Aritmetica(Instruccion):
         nodo = NodoAST("ARITMETICA")
         if self.OperacionDer != None:
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
-            op = self.getOperador(self.operador)
-            nodo.agregarHijo(str(self.operador))
+            nodo.agregarHijo(self.operador)
             nodo.agregarHijoNodo(self.OperacionDer.getNodo())
         else:
-            op = self.getOperador(self.operador)
-            nodo.agregarHijoNodo(op)
+            nodo.agregarHijo(self.operador)
             nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
         return nodo
-
-
-    def getOperador(self,operador):
-        if operador == OperadorAritmetico.MAS:
-            return "+"
-        elif operador == OperadorAritmetico.MENOS:
-            return "-"
-        elif operador == OperadorAritmetico.POR:
-            return "*"
-        elif operador == OperadorAritmetico.DIV:
-            return "/"
-        elif operador == OperadorAritmetico.POT:
-            return "**"
-        elif operador == OperadorAritmetico.MOD:
-            return "%"
-        elif operador == OperadorAritmetico.INCREMENTO:
-            return "++"
-        elif operador == OperadorAritmetico.Decremento:
-            return "--"
-        else:
-            return None
-        
+       
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:
             return int(val)

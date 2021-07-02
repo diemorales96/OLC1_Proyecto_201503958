@@ -23,7 +23,5 @@ class Return(Instruccion):
 
     def getNodo(self):
         nodo = NodoAST("RETURN")
-
         nodo.agregarHijoNodo(self.expresion.getNodo())
-
         return nodo
