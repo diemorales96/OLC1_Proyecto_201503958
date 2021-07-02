@@ -1,3 +1,4 @@
+from Abstract.NodoAST import NodoAST
 from Abstract.Instruccion import Instruccion
 from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO, OperadorLogico
@@ -66,6 +67,33 @@ class Casteo(Instruccion):
                 except:
                     return Excepcion("Semantico", "No se puede castear para String.", self.fila, self.columna)
             return Excepcion("Semantico", "Tipo Erroneo de casteo para String.", self.fila, self.columna)
+        if self.tipo == TIPO.BOOLEANO:
+            if self.expresion.tipo == TIPO.CADENA:
+                try:
+                    return self.obtenerVal(self.expresion.tipo, val)
+                except:
+                    return Excepcion("Semantico", "No se puede castear para Boolean.", self.fila, self.columna)
+            return Excepcion("Semantico", "Tipo Erroneo de casteo para Boolean.", self.fila, self.columna)
+
+    def getNodo(self):
+        nodo = NodoAST("CASTEO")
+        nodo.agregarHijo(self.obtenerTipo(self.tipo))
+        nodo.agregarHijoNodo(self.expresion.getNodo())
+        return nodo
+
+    def obtenerTipo(self,tipo):
+        if tipo == TIPO.ARREGLO:
+            return "ARREGLO"
+        elif tipo == TIPO.BOOLEANO:
+            return "BOOLEANO"
+        elif tipo == TIPO.CADENA:
+            return "CADENA"
+        elif tipo == TIPO.CHARACTER:
+            return "CHARACTER"
+        elif tipo == TIPO.DECIMAL:
+            return "DECIMAL"
+        elif tipo == TIPO.ENTERO:
+            return "ENTERO"    
 
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:
@@ -74,4 +102,10 @@ class Casteo(Instruccion):
             return float(val)
         elif tipo == TIPO.BOOLEANO:
             return bool(val)
-        return str(val)
+        elif tipo == TIPO.CADENA:
+            if val.lower() == "false":
+                return False
+            elif val.lower() == "True":
+                return True
+            else:
+                return str(val)

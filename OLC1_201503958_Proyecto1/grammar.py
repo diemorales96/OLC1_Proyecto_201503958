@@ -1,4 +1,5 @@
 
+from Abstract.NodoAST import NodoAST
 from Nativas.truncate import Truncate
 from Instrucciones.Main import Main
 import re
@@ -38,10 +39,15 @@ reservadas = {
     'func'      : 'RFUNC',
     'return'    : 'RRETURN',
     'continue'  : 'RCONTINUE',
+    'switch'    : 'RSWITCH',
+    'default'   : 'RDEFAULT',
+    'case'      : 'RCASE',
+    'read'      : 'RREAD',
 }
 
 tokens  = [
     'PUNTOCOMA',
+    'DOSPUNTOS',
     'PARA',
     'PARC',
     'LLAVEA',
@@ -75,6 +81,7 @@ tokens  = [
 
 # Tokens
 t_PUNTOCOMA     = r';'
+t_DOSPUNTOS     = r':'
 t_PARA          = r'\('
 t_PARC          = r'\)'
 t_LLAVEA        = r'{'
@@ -201,7 +208,9 @@ from Instrucciones.Llamada import Llamada
 from Instrucciones.Return import Return
 from Instrucciones.Continue import Continue
 from Expresiones.Casteo import Casteo
-
+from Instrucciones.Switch import Switch
+from Instrucciones.Case import Case
+from Expresiones.Read import Read
 
 def p_init(t) :
     'init            : instrucciones'
@@ -236,6 +245,7 @@ def p_instruccion(t) :
                         | funcion_instr
                         | llamada_instr finins
                         | return_instr finins
+                        | switch_instr
                         | continue_instr finins'''
     t[0] = t[1]
 
@@ -296,36 +306,37 @@ def p_if3(t) :
 
 #///////////////////////////////////////SWITCH//////////////////////////////////////////////////
 
-#def p_switch1(t):
-#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA case_list RDEFAULT DOSPUNTOS instrucciones LLAVEC'
-#    t[0] = SWITCH(t[3],t[6],t[9], t.lineno(2),find_column(input,t.slice[2]))
 
-#def p_switch2(t):
-#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA case_list LLAVEC'
-#    t[0] = SWITCH(t[3],t[6],None,t.lineno(2),find_column(input,t.slice[2]))
+def p_switch1(t):
 
-#def p_switch3(t):
-#    'switch_instr   : RSWITCH PARA expresion PARC LLAVEA RDEFAULT DOSPUNTOS instrucciones LLAVEC'
-#    t[0] = SWITCH(t[3],None,t[8],t.lineno(2),find_column(input,t.slice[2]))
+    'switch_instr : RSWITCH PARA expresion PARC LLAVEA case_list RDEFAULT DOSPUNTOS instrucciones LLAVEC '
+    t[0]=Switch(t[3],t[6],t[9],t.lineno(2), find_column(input, t.slice[2]))
 
-#def p_case(t):
-#    'case_list  : case_list case_instr'
-#    if t[2] != "":
-#        t[1].append(t[2])
-#    t[0] = t[1]
+def p_switch2(t):
+    'switch_instr : RSWITCH PARA expresion PARC LLAVEA case_list LLAVEC '
+    t[0]=Switch(t[3],t[6],None,t.lineno(2), find_column(input, t.slice[2]))
 
-#def p_caseInstrucciones(t):
-#    'case_list  : case_instr'
-#    if t[1] == "":
-#       t[0] = []
-#    else:
-#    t[0] = [t[1]]
+def p_switch3(t):
+    'switch_instr : RSWITCH PARA expresion PARC LLAVEA RDEFAULT DOSPUNTOS instrucciones LLAVEC '
+    t[0]=Switch(t[3],None,t[8],t.lineno(2), find_column(input, t.slice[2]))
 
-#def p_caseInstruccion(t):
-#    'case_list  : RCASE expresion DOSPUNTOS instrucciones'
-#    t[0] = CASE(t[2],t[4],t.lineno(1),find_column(input,t.slice[1]))
-#
 
+def p_listofcases(t):
+    'case_list : case_list case_instr'
+    if t[2] != "":
+        t[1].append(t[2])
+    t[0] = t[1]
+
+def p_caseInstrucciones(t):
+    '''case_list  : case_instr'''
+    if t[1] == "":
+        t[0] = []
+    else:
+        t[0] = [t[1]]
+
+def p_case_instruccion(t):
+    'case_instr     : RCASE expresion DOSPUNTOS instrucciones'
+    t[0] = Case(t[2], t[4], t.lineno(1), find_column(input, t.slice[1]))
 
 
 #///////////////////////////////////////WHILE//////////////////////////////////////////////////
@@ -560,6 +571,10 @@ def p_expresion_cast(t):
     '''expresion : PARA tipo PARC expresion'''
     t[0] = Casteo(t[2], t[4], t.lineno(1), find_column(input, t.slice[1]))
 
+def p_expresion_read(t):
+    '''expresion : RREAD PARA PARC '''
+    t[0] = Read(t.lineno, find_column(input, t.slice[1]))
+
 import ply.yacc as yacc
 parser = yacc.yacc()
 
@@ -585,6 +600,7 @@ from Nativas.Length import Length
 from Nativas.truncate import Truncate
 from Nativas.Round import Round
 from Nativas.Typeof import Typeof
+import time
 
 def crearNativas(ast):         
     nombre = "toupper"
@@ -628,16 +644,18 @@ from TS.Arbol import Arbol
 from TS.TablaSimbolos import TablaSimbolos
 def analizar():
     entrada = Text1.get(1.0,END)
-
+    
     instrucciones = parse(entrada) 
     ast = Arbol(instrucciones)
     TSGlobal = TablaSimbolos()
     ast.setTSglobal(TSGlobal)
     crearNativas(ast)
+
+    ast.setCons(salida)
+    
     for error in errores:                  
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
-
     for instruccion in ast.getInstrucciones():
         if isinstance(instruccion, Funcion):
             ast.addFuncion(instruccion)     
@@ -677,6 +695,22 @@ def analizar():
             err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())
+
+    init = NodoAST("RAIZ")
+    instr = NodoAST("INSTRUCCIONES")
+
+    for instruccion in ast.getInstrucciones():
+        instr.agregarHijoNodo(instruccion.getNodo())
+
+    init.agregarHijoNodo(instr)
+    grafo = ast.getDot(init) 
+
+    dirname = os.path.dirname(__file__)
+    direcc = os.path.join(dirname, 'ast.dot')
+    arch = open(direcc, "w+")
+    arch.write(grafo)
+    arch.close()
+    os.system('dot -T pdf -o ast.pdf ast.dot')
 
     ReporteTabla(ast.getExcepciones())
     salida.delete(1.0,END)
@@ -724,7 +758,7 @@ def load_file():
                    texto = archivo.read()
                    extencion = fname
                    print(extencion[1])
-                   Text1.insert(INSERT,texto,encoding="utf-8")
+                   Text1.insert(INSERT,texto)
                    archivo.close()
                except:                    
                    showerror("Open Source File", "Failed to read file\n'%s'" % fname)
@@ -780,9 +814,6 @@ filemenu.add_command(label="Guardar Como",command = saveAs)
 filemenu.add_command(label="Ejecutar Analizar", command = analizar)
 filemenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
 filemenu.add_command(label="Salir",command = close_window)
-
-
-
 
 menubar.add_cascade(label="File", menu=filemenu)
 

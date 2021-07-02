@@ -1,3 +1,4 @@
+from Abstract.NodoAST import NodoAST
 from Abstract.Instruccion import Instruccion
 from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO, OperadorAritmetico
@@ -249,8 +250,39 @@ class Aritmetica(Instruccion):
             return Excepcion("Semantico", "Tipo Erroneo de operacion para Decremento.", self.fila, self.columna)    
         return Excepcion("Semantico", "Tipo de Operacion Aritmetica no Especificado.", self.fila, self.columna)
 
+    def getNodo(self):
+        nodo = NodoAST("ARITMETICA")
+        if self.OperacionDer != None:
+            nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
+            op = self.getOperador(self.operador)
+            nodo.agregarHijo(str(self.operador))
+            nodo.agregarHijoNodo(self.OperacionDer.getNodo())
+        else:
+            op = self.getOperador(self.operador)
+            nodo.agregarHijoNodo(op)
+            nodo.agregarHijoNodo(self.OperacionIzq.getNodo())
+        return nodo
 
 
+    def getOperador(self,operador):
+        if operador == OperadorAritmetico.MAS:
+            return "+"
+        elif operador == OperadorAritmetico.MENOS:
+            return "-"
+        elif operador == OperadorAritmetico.POR:
+            return "*"
+        elif operador == OperadorAritmetico.DIV:
+            return "/"
+        elif operador == OperadorAritmetico.POT:
+            return "**"
+        elif operador == OperadorAritmetico.MOD:
+            return "%"
+        elif operador == OperadorAritmetico.INCREMENTO:
+            return "++"
+        elif operador == OperadorAritmetico.Decremento:
+            return "--"
+        else:
+            return None
         
     def obtenerVal(self, tipo, val):
         if tipo == TIPO.ENTERO:

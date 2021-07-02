@@ -1,3 +1,4 @@
+from Abstract.NodoAST import NodoAST
 from Instrucciones.Return import Return
 from TS.Tipo import TIPO
 from Abstract.Instruccion import Instruccion
@@ -30,3 +31,34 @@ class Funcion(Instruccion):
                 self.tipo = value.tipo
                 return value.result         
         return None
+
+    def getNodo(self):
+        nodo = NodoAST("FUNCION")
+        nodo.agregarHijo(str(self.nombre))
+        parametros = NodoAST("PARAMETROS")
+        for param in self.parametros:
+            parametro = NodoAST("PARAMETRO")
+            parametro.agregarHijo(self.obtenerTipo(param["tipo"]))
+            parametro.agregarHijo(param["identificador"])
+            parametros.agregarHijoNodo(parametro)
+        nodo.agregarHijoNodo(parametros)
+
+        instrucciones = NodoAST("INSTRUCCIONES")
+        for instr in self.instrucciones:
+            instrucciones.agregarHijoNodo(instr.getNodo())
+        nodo.agregarHijoNodo(instrucciones)
+        return nodo
+
+    def obtenerTipo(self,tipo):
+        if tipo == TIPO.ARREGLO:
+            return "ARREGLO"
+        elif tipo == TIPO.BOOLEANO:
+            return "BOOLEANO"
+        elif tipo == TIPO.CADENA:
+            return "CADENA"
+        elif tipo == TIPO.CHARACTER:
+            return "CHARACTER"
+        elif tipo == TIPO.DECIMAL:
+            return "DECIMAL"
+        elif tipo == TIPO.ENTERO:
+            return "ENTERO" 

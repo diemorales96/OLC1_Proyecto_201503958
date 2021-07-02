@@ -1,3 +1,4 @@
+from Abstract.NodoAST import NodoAST
 from Abstract.Instruccion import Instruccion
 from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO
@@ -10,3 +11,7 @@ class Continue(Instruccion):
 
     def interpretar(self, tree, table):
         pass
+
+    def getNodo(self):
+        nodo = NodoAST("CONTINUE")
+        return nodo
