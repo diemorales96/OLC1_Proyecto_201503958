@@ -12,6 +12,7 @@ class Aritmetica(Instruccion):
         self.fila = fila
         self.columna = columna
         self.tipo = None
+        self.arreglo = False
 
     
     def interpretar(self, tree, table):
@@ -222,12 +223,12 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.INCREMENTO:    
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq +1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo,self.arreglo, self.fila, self.columna, izq +1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)+1
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq +1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.arreglo,self.fila, self.columna, izq +1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)+1
             elif self.OperacionIzq.tipo == TIPO.NULO:
@@ -237,12 +238,12 @@ class Aritmetica(Instruccion):
         elif self.operador == OperadorAritmetico.Decremento:    
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq -1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo,self.arreglo, self.fila, self.columna, izq -1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)-1
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo, self.fila, self.columna, izq -1)
+                simbolo = Simbolo(self.OperacionIzq.identificador, self.OperacionIzq.tipo,self.arreglo, self.fila, self.columna, izq -1)
                 table.actualizarTabla(simbolo)
                 return  self.obtenerVal(self.OperacionIzq.tipo, izq)-1
             elif self.OperacionIzq.tipo == TIPO.NULO:

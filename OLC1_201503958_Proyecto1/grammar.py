@@ -15,7 +15,9 @@ from tkinter import ttk
 from tkinter.filedialog import askopenfilename
 import tkinter as tk
 import tkinter.font as tkFont
+import sys
 
+sys.setrecursionlimit(3000)
 #///////////////////////////////////////ANALISIS LEXICO//////////////////////////////////////////
 errores = []
 extencion = ""
@@ -43,6 +45,7 @@ reservadas = {
     'default'   : 'RDEFAULT',
     'case'      : 'RCASE',
     'read'      : 'RREAD',
+    'new'       : 'RNEW',
 }
 
 tokens  = [
@@ -75,7 +78,9 @@ tokens  = [
     'ENTERO',
     'CADENA',
     'CARACTER',
-    'ID'
+    'ID',
+    'CORA',
+    'CORC'
 
 ] + list(reservadas.values())
 
@@ -105,6 +110,8 @@ t_IGUAL         = r'='
 t_AND           = r'&&'
 t_OR            = r'\|\|'
 t_NOT           = r'!'
+t_CORA          = r'\['
+t_CORC          = r'\]'
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -211,6 +218,10 @@ from Expresiones.Casteo import Casteo
 from Instrucciones.Switch import Switch
 from Instrucciones.Case import Case
 from Expresiones.Read import Read
+from Instrucciones.DeclaracionArr1 import DeclaracionArr1
+from Instrucciones.ModificarArreglo import ModificarArreglo
+from Expresiones.AccesoArreglo import AccesoArreglo
+
 
 def p_init(t) :
     'init            : instrucciones'
@@ -246,7 +257,9 @@ def p_instruccion(t) :
                         | llamada_instr finins
                         | return_instr finins
                         | switch_instr
-                        | continue_instr finins'''
+                        | continue_instr finins
+                        | declArr_instr finins
+                        | modArr_instr finins'''
     t[0] = t[1]
 
 def p_finins(t) :
@@ -283,6 +296,47 @@ def p_declaracion_simple(t) :
     'declaracion_instr_simple     : RVAR ID'
     primitivo_nulo = Primitivos(TIPO.NULO, None, t.lineno(1), find_column(input, t.slice[1]))
     t[0] = Declaracion(t[2], t.lineno(2), find_column(input, t.slice[2]),primitivo_nulo)
+
+#///////////////////////////////////////DECLARACION ARREGLOS//////////////////////////////////////////////////
+
+def p_declArr(t) :
+    '''declArr_instr     : tipo1'''
+    t[0] = t[1]
+
+def p_tipo1(t) :
+    '''tipo1     : tipo lista_Dim ID IGUAL RNEW tipo lista_expresiones'''
+    t[0] = DeclaracionArr1(t[1], t[2], t[3], t[6], t[7], t.lineno(3), find_column(input, t.slice[3]))
+
+def p_lista_Dim1(t) :
+    'lista_Dim     : lista_Dim CORA CORC'
+    t[0] = t[1] + 1
+    
+def p_lista_Dim2(t) :
+    'lista_Dim    : CORA CORC'
+    t[0] = 1
+
+def p_lista_expresiones_1(t) :
+    'lista_expresiones     : lista_expresiones CORA expresion CORC'
+    t[1].append(t[3])
+    t[0] = t[1]
+    
+def p_lista_expresiones_2(t) :
+    'lista_expresiones    : CORA expresion CORC'
+    t[0] = [t[2]]
+
+#///////////////////////////////////////MODIFICACION ARREGLOS//////////////////////////////////////////////////
+
+
+def p_modArr(t) :
+    '''modArr_instr     :  ID lista_expresiones IGUAL expresion'''
+    t[0] = ModificarArreglo(t[1], t[2], t[4], t.lineno(1), find_column(input, t.slice[1]))
+
+#///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
+
+def p_asignacion(t) :
+    'asignacion_instr     : ID IGUAL expresion'
+    t[0] = Asignacion(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
+
 
 #///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
 
@@ -546,6 +600,9 @@ def p_primitivo_decimal(t):
     '''expresion : DECIMAL'''
     t[0] = Primitivos(TIPO.DECIMAL, t[1], t.lineno(1), find_column(input, t.slice[1]))
 
+def p_expresion_Arreglo(t):
+    '''expresion : ID lista_expresiones'''
+    t[0] = AccesoArreglo(t[1], t[2], t.lineno(1), find_column(input, t.slice[1]))
 
 def p_primitivo_cadena(t):
     '''expresion : CADENA'''
@@ -659,7 +716,7 @@ def analizar():
     for instruccion in ast.getInstrucciones():
         if isinstance(instruccion, Funcion):
             ast.addFuncion(instruccion)     
-        if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion):
+        if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, DeclaracionArr1) or isinstance(instruccion, ModificarArreglo):
             value = instruccion.interpretar(ast,TSGlobal)
             if isinstance(value, Excepcion) :
                 ast.getExcepciones().append(value)
@@ -691,7 +748,7 @@ def analizar():
                 ast.getExcepciones().append(err)
                 ast.updateConsola(err.toString())
     for instruccion in ast.getInstrucciones():  
-        if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, Funcion)):
+        if not (isinstance(instruccion, Main) or isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, Funcion)or isinstance(instruccion, DeclaracionArr1) or isinstance(instruccion, ModificarArreglo)):
             err = Excepcion("Semantico", "Sentencias fuera de Main", instruccion.fila, instruccion.columna)
             ast.getExcepciones().append(err)
             ast.updateConsola(err.toString())
@@ -717,6 +774,7 @@ def analizar():
     s = ast.getConsola()
     print(s)
     salida.insert(INSERT,s)
+    TSGlobal.obtenerTSimbolos()
 #END
 
 def ReporteTabla(Errores):
@@ -768,6 +826,9 @@ def load_file():
 def mostrar_Reporte():
     webbrowser.open_new_tab('.Reporte Errores.html')
 
+def mostrar_AST():
+    webbrowser.open_new_tab('ast.pdf')
+
 def new():
     global extencion 
     Text1.delete(1.0,END)
@@ -812,10 +873,17 @@ filemenu.add_command(label="Abrir", command = load_file)
 filemenu.add_command(label="Guardar", command = save)
 filemenu.add_command(label="Guardar Como",command = saveAs)
 filemenu.add_command(label="Ejecutar Analizar", command = analizar)
-filemenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
 filemenu.add_command(label="Salir",command = close_window)
 
 menubar.add_cascade(label="File", menu=filemenu)
+
+reportmenu = Menu(menubar)
+reportmenu = Menu(menubar)
+reportmenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
+reportmenu.add_command(label = "Reporte de AST", command = mostrar_AST)
+
+menubar.add_cascade(label="Reportes", menu=reportmenu)
+
 
 app.config(menu=menubar)
 

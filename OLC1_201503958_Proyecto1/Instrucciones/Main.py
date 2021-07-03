@@ -12,7 +12,7 @@ class Main(Instruccion):
         self.columna = columna
     
     def interpretar(self, tree, table):
-        nuevaTabla = TablaSimbolos(table) 
+        nuevaTabla = TablaSimbolos(table,"MAIN["+str(self.fila)+","+str(self.columna)+"]") 
         for instruccion in self.instrucciones: 
             value = instruccion.interpretar(tree,nuevaTabla)
             if isinstance(value, Excepcion) :

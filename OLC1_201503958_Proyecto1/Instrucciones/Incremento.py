@@ -12,7 +12,7 @@ class Incremento(Instruccion):
         self.fila = fila
         self.columna = columna
         self.tipo = None
-
+        self.arreglo = False
 
     def interpretar(self, tree, table):
         izq = self.OperacionIzq.interpretar(tree, table)
@@ -24,13 +24,13 @@ class Incremento(Instruccion):
         if self.operador == OperadorAritmetico.INCREMENTO:    
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo , self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) + 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo,self.arreglo, self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) + 1)
                 res = table.actualizarTabla(simbolo)
                 if isinstance(res, Excepcion): return res
                 return None
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo , self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) + 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo,self.arreglo, self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) + 1)
                 res = table.actualizarTabla(simbolo)
                 if isinstance(res, Excepcion): return res
                 return None
@@ -39,13 +39,13 @@ class Incremento(Instruccion):
         elif self.operador == OperadorAritmetico.Decremento:    
             if self.OperacionIzq.tipo == TIPO.ENTERO:
                 self.tipo = TIPO.ENTERO
-                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo , self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) - 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo, self.arreglo, self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) - 1)
                 res = table.actualizarTabla(simbolo)
                 if isinstance(res, Excepcion): return res
                 return None
             elif self.OperacionIzq.tipo == TIPO.DECIMAL:
                 self.tipo = TIPO.DECIMAL
-                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo , self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) - 1)
+                simbolo = Simbolo(self.OperacionIzq.identificador,self.OperacionIzq.tipo, self.arreglo, self.fila, self.columna, self.obtenerVal(self.OperacionIzq.tipo , izq) - 1)
                 res = table.actualizarTabla(simbolo)
                 if isinstance(res, Excepcion): return res
                 return None

@@ -88,6 +88,8 @@ class Casteo(Instruccion):
             return float(val)
         elif tipo == TIPO.BOOLEANO:
             return bool(val)
+        elif tipo == TIPO.CHARACTER:
+            return str(val)
         elif tipo == TIPO.CADENA:
             if val.lower() == "false":
                 return False

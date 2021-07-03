@@ -4,16 +4,23 @@ from TS.Excepcion import Excepcion
 from TS.Tipo import TIPO
 
 class TablaSimbolos:
-    def __init__(self, anterior = None):
+    def __init__(self, anterior = None,entorno = None,tipo_dec = None):
         self.tabla = {} 
         self.anterior = anterior
+        self.entorno = entorno
+        self.tipo_dec = tipo_dec
         
-
+    TSIMB = []
     def setTabla(self, simbolo): 
         if simbolo.id.lower() in self.tabla :
             return Excepcion("Semantico", "Variable " + simbolo.id + " ya existe", simbolo.fila, simbolo.columna)
         else:
             self.tabla[simbolo.id.lower()] = simbolo
+            if simbolo.arreglo == False:
+                self.tipo_dec = "VARIABLE"
+            else:
+                self.tipo_dec = "ARREGLO"
+            self.TSIMB.append([self.entorno,self.tipo_dec,simbolo.id.lower()])
             return None
 
     def getTabla(self, id):        
@@ -48,4 +55,5 @@ class TablaSimbolos:
             
         return Excepcion("Semantico", "Variable No encontrada en Asignacion", simbolo.getFila(), simbolo.getColumna())
         
-    
+    def obtenerTSimbolos(self):
+        print(self.TSIMB)

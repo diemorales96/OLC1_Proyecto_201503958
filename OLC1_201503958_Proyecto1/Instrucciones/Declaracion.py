@@ -10,12 +10,13 @@ class Declaracion(Instruccion):
         self.expresion = expresion
         self.fila = fila
         self.columna = columna
+        self.arreglo = False
 
     def interpretar(self, tree, table):
         value = self.expresion.interpretar(tree, table) 
         if isinstance(value, Excepcion): return value
 
-        simbolo = Simbolo(str(self.identificador), self.expresion.tipo, self.fila, self.columna, value)
+        simbolo = Simbolo(str(self.identificador), self.expresion.tipo,self.arreglo, self.fila, self.columna, value)
 
         result = table.setTabla(simbolo)
 
