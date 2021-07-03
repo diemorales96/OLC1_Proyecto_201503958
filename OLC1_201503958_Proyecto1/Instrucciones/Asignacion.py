@@ -11,12 +11,13 @@ class Asignacion(Instruccion):
         self.fila = fila
         self.columna = columna
         self.arreglo = False
+        self.funcion =  False
 
     def interpretar(self, tree, table):
         value = self.expresion.interpretar(tree, table) 
         if isinstance(value, Excepcion): return value
 
-        simbolo = Simbolo(self.identificador, self.expresion.tipo,self.arreglo, self.fila, self.columna, value)
+        simbolo = Simbolo(self.identificador, self.expresion.tipo,self.arreglo, self.funcion, self.fila, self.columna, value)
 
         result = table.actualizarTabla(simbolo)
 

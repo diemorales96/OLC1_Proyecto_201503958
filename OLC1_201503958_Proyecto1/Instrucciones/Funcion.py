@@ -17,7 +17,7 @@ class Funcion(Instruccion):
         self.tipo = TIPO.NULO
     
     def interpretar(self, tree, table):
-        nuevaTabla = TablaSimbolos(table) 
+        nuevaTabla = TablaSimbolos(table,"FUNCION"+self.nombre+"["+str(self.fila)+str(self.columna)+"]") 
         for instruccion in self.instrucciones:
             value = instruccion.interpretar(tree,nuevaTabla)
             if isinstance(value, Excepcion) :

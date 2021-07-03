@@ -17,7 +17,7 @@ class DeclaracionArr1(Instruccion):
         self.fila = fila
         self.columna = columna
         self.arreglo = True
-
+        self.funcion = False
 
     def interpretar(self, tree, table):
         if self.tipo != self.tipo2:                    
@@ -28,7 +28,7 @@ class DeclaracionArr1(Instruccion):
       
         value = self.crearDimensiones(tree, table, copy.copy(self.expresiones))     
         if isinstance(value, Excepcion): return value
-        simbolo = Simbolo(str(self.identificador), self.tipo, self.arreglo, self.fila, self.columna, value)
+        simbolo = Simbolo(str(self.identificador), self.tipo, self.arreglo,self.funcion, self.fila, self.columna, value)
         result = table.setTabla(simbolo)
         if isinstance(result, Excepcion): return result
         return None

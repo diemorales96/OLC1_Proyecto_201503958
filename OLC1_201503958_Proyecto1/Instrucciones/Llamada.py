@@ -14,6 +14,7 @@ class Llamada(Instruccion):
         self.fila = fila
         self.columna = columna
         self.arreglo = False
+        self.funcion = True
 
     def interpretar(self, tree, table):
         result = tree.getFuncion(self.nombre.lower()) 
@@ -30,7 +31,7 @@ class Llamada(Instruccion):
                     result.parametros[contador]["tipo"] = expresion.tipo
                 if result.parametros[contador]["tipo"] == expresion.tipo: 
                     
-                    simbolo = Simbolo(str(result.parametros[contador]['identificador']).lower(), result.parametros[contador]['tipo'],self.arreglo, self.fila, self.columna, resultExpresion)
+                    simbolo = Simbolo(str(result.parametros[contador]['identificador']).lower(), result.parametros[contador]['tipo'],self.arreglo,self.funcion, self.fila, self.columna, resultExpresion)
                     resultTabla = nuevaTabla.setTabla(simbolo)
                     if isinstance(resultTabla, Excepcion): return resultTabla
                 else:

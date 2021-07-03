@@ -1,12 +1,13 @@
 
 class Simbolo:
-    def __init__(self, identificador, tipo, arreglo, fila, columna, valor ):
+    def __init__(self, identificador, tipo, arreglo,funcion, fila, columna, valor ):
         self.id = identificador
         self.tipo = tipo
         self.fila = fila
         self.columna = columna
         self.valor = valor
         self.arreglo = arreglo
+        self.funcion = funcion
 
     def getID(self):
         return self.id
@@ -34,3 +35,6 @@ class Simbolo:
     
     def getArreglo(self):
         return self.arreglo
+
+    def getFuncion(self):
+        return self.funcion

@@ -12,16 +12,24 @@ class TablaSimbolos:
         
     TSIMB = []
     def setTabla(self, simbolo): 
+        
         if simbolo.id.lower() in self.tabla :
             return Excepcion("Semantico", "Variable " + simbolo.id + " ya existe", simbolo.fila, simbolo.columna)
         else:
             self.tabla[simbolo.id.lower()] = simbolo
-            if simbolo.arreglo == False:
+            for lista in self.TSIMB:
+                if self.entorno == lista[0] and simbolo.id.lower() == lista[2]:
+                    lista[3] = simbolo.valor
+                    return None
+            if simbolo.arreglo == False and simbolo.funcion == False :
                 self.tipo_dec = "VARIABLE"
-            else:
+            elif simbolo.arreglo == True and simbolo.funcion == False:
                 self.tipo_dec = "ARREGLO"
-            self.TSIMB.append([self.entorno,self.tipo_dec,simbolo.id.lower()])
-            return None
+            else:
+                self.tipo_dec = "FUNCION"
+            self.TSIMB.append([simbolo.id,self.tipo_dec,simbolo.tipo.name,self.entorno,simbolo.valor,simbolo.fila,simbolo.columna])
+            return None    
+                    
 
     def getTabla(self, id):        
         tablaActual = self
@@ -56,4 +64,12 @@ class TablaSimbolos:
         return Excepcion("Semantico", "Variable No encontrada en Asignacion", simbolo.getFila(), simbolo.getColumna())
         
     def obtenerTSimbolos(self):
-        print(self.TSIMB)
+        return self.TSIMB
+
+    def setTSimbolos(self,funcion):
+        self.tipo_dec = "FUNCION"
+        self.TSIMB.append([funcion.nombre,self.tipo_dec,"--",self.entorno,"--",funcion.fila,funcion.columna])        
+        return None
+
+    def limpiarTabla(self):
+        self.TSIMB.clear()

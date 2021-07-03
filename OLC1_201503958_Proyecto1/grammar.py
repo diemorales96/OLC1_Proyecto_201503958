@@ -698,14 +698,17 @@ def crearNativas(ast):
     ast.addFuncion(typeof)
 
 from TS.Arbol import Arbol
+
 from TS.TablaSimbolos import TablaSimbolos
 def analizar():
+
     entrada = Text1.get(1.0,END)
     
     instrucciones = parse(entrada) 
     ast = Arbol(instrucciones)
-    TSGlobal = TablaSimbolos()
+    TSGlobal = TablaSimbolos(None, "GLOBAL[0,0]")
     ast.setTSglobal(TSGlobal)
+    TSGlobal.limpiarTabla()
     crearNativas(ast)
 
     ast.setCons(salida)
@@ -713,8 +716,12 @@ def analizar():
     for error in errores:                  
         ast.getExcepciones().append(error)
         ast.updateConsola(error.toString())
+        
     for instruccion in ast.getInstrucciones():
         if isinstance(instruccion, Funcion):
+
+            TSGlobal.setTSimbolos(instruccion)
+            
             ast.addFuncion(instruccion)     
         if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, DeclaracionArr1) or isinstance(instruccion, ModificarArreglo):
             value = instruccion.interpretar(ast,TSGlobal)
@@ -774,8 +781,27 @@ def analizar():
     s = ast.getConsola()
     print(s)
     salida.insert(INSERT,s)
-    TSGlobal.obtenerTSimbolos()
+    
+    Ts = TSGlobal.obtenerTSimbolos()
+    ReporteTSimbolos(Ts)
 #END
+
+def ReporteTSimbolos(Tabla):
+    cadena = "<html>\n <head> <head>\n<body>\n<center>\n<table border=\"1\" class = \"egt\">\n\t"
+    cadena = cadena + "<tr>\n\t\t<th>Identificador</th>\n\t\t<th>Tipo</th>\n\t\t<th>Tipo Variable</th>\n\t\t<th>Entorno</th>\n\t\t<th>Valor</th>\n\t\t<th>Linea</th>\n\t\t<th>Columna</th>\n\t</tr>\n" 
+    cont = 1
+    for a in Tabla:
+        cadena = cadena + "<tr>\n\t\t<td>"+ a[0] +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ a[1] +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ a[2] +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ a[3] +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a[4]) +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a[5]) +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a[6]) +"</td>\n"
+        cont += 1
+    
+    cadena = cadena +"</table>\n</body>\n</html>"
+    crearArchivo2(cadena,".")
 
 def ReporteTabla(Errores):
     cadena = "<html>\n <head> <head>\n<body>\n<center>\n<table border=\"1\" class = \"egt\">\n\t"
@@ -804,6 +830,17 @@ def crearArchivo(cadena,path):
         #END
     #END
 
+def crearArchivo2(cadena,path):
+        try:
+            os.stat(path.strip())
+        except:
+            os.makedirs(path.strip())
+        with open(path+"Reporte Tabla.html","w+") as file:
+            file.seek(0,0)
+            file.write(cadena)
+            file.close()
+        #END
+    #END
 def load_file():
     
            fname = askopenfilename(filetypes=(("", ""),

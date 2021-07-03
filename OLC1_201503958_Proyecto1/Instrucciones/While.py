@@ -20,7 +20,7 @@ class While(Instruccion):
 
             if self.condicion.tipo == TIPO.BOOLEANO:
                 if bool(condicion) == True:  
-                    nuevaTabla = TablaSimbolos(table)      
+                    nuevaTabla = TablaSimbolos(table,"WHILE["+str(self.fila)+str(self.columna)+"]")      
                     for instruccion in self.instrucciones:
                         result = instruccion.interpretar(tree, nuevaTabla) 
                         if isinstance(result, Excepcion) :
