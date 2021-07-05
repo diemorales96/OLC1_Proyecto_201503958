@@ -18,7 +18,7 @@ class For(Instruccion):
         self.columna = columna
 
     def interpretar(self, tree, table):
-        nTabla = TablaSimbolos(table,"DECLARACION DEL FOR["+str(self.fila)+str(self.columna)+"]") 
+        nTabla = TablaSimbolos(table,"FOR["+str(self.fila)+","+str(self.columna)+"]") 
         declaracion = self.declaraciones.interpretar(tree,nTabla)
         if isinstance(declaracion,Declaracion): return None
         if isinstance(declaracion,Asignacion): return None
@@ -29,7 +29,7 @@ class For(Instruccion):
 
             if self.condicion.tipo == TIPO.BOOLEANO:
                 if bool(condicion) == True:   
-                    nuevaTabla = TablaSimbolos(nTabla,"FOR["+str(self.fila)+str(self.columna)+"]")      
+                    nuevaTabla = TablaSimbolos(nTabla,"FOR["+str(self.fila)+","+str(self.columna)+"]")      
                     for instruccion in self.instrucciones:
                         result = instruccion.interpretar(tree, nuevaTabla)
                         if isinstance(result, Excepcion) :

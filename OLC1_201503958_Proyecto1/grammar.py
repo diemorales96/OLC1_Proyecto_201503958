@@ -307,6 +307,8 @@ def p_tipo1(t) :
     '''tipo1     : tipo lista_Dim ID IGUAL RNEW tipo lista_expresiones'''
     t[0] = DeclaracionArr1(t[1], t[2], t[3], t[6], t[7], t.lineno(3), find_column(input, t.slice[3]))
 
+
+
 def p_lista_Dim1(t) :
     'lista_Dim     : lista_Dim CORA CORC'
     t[0] = t[1] + 1
@@ -330,13 +332,6 @@ def p_lista_expresiones_2(t) :
 def p_modArr(t) :
     '''modArr_instr     :  ID lista_expresiones IGUAL expresion'''
     t[0] = ModificarArreglo(t[1], t[2], t[4], t.lineno(1), find_column(input, t.slice[1]))
-
-#///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
-
-def p_asignacion(t) :
-    'asignacion_instr     : ID IGUAL expresion'
-    t[0] = Asignacion(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
-
 
 #///////////////////////////////////////ASIGNACION//////////////////////////////////////////////////
 
@@ -450,6 +445,10 @@ def p_parametros_2(t) :
 def p_parametro(t) :
     'parametro     : tipo ID'
     t[0] = {'tipo':t[1],'identificador':t[2]}
+
+def p_parametro_Arreglo(t):
+    '''parametro    : tipo lista_Dim ID'''
+    t[0] = {'tipo':t[1],'identificador':t[3],'tipo_dato':TIPO.ARREGLO,'longitud':t[2]}
 
 #///////////////////////////////////////LLAMADA//////////////////////////////////////////////////
 
@@ -721,7 +720,7 @@ def analizar():
         if isinstance(instruccion, Funcion):
 
             TSGlobal.setTSimbolos(instruccion)
-            
+
             ast.addFuncion(instruccion)     
         if isinstance(instruccion, Declaracion) or isinstance(instruccion, Asignacion)or isinstance(instruccion, DeclaracionArr1) or isinstance(instruccion, ModificarArreglo):
             value = instruccion.interpretar(ast,TSGlobal)
@@ -774,7 +773,7 @@ def analizar():
     arch = open(direcc, "w+",encoding="utf-8")
     arch.write(grafo)
     arch.close()
-    os.system('dot -T pdf -o ast.pdf ast.dot')
+    os.system('dot -T svg -o ast.svg ast.dot')
 
     ReporteTabla(ast.getExcepciones())
     salida.delete(1.0,END)
@@ -794,7 +793,7 @@ def ReporteTSimbolos(Tabla):
         cadena = cadena + "<tr>\n\t\t<td>"+ a[0] +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ a[1] +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ a[2] +"</td>\n"
-        cadena = cadena + "\n\t\t<td>"+ a[3] +"</td>\n"
+        cadena = cadena + "\n\t\t<td>"+ str(a[3]) +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ str(a[4]) +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ str(a[5]) +"</td>\n"
         cadena = cadena + "\n\t\t<td>"+ str(a[6]) +"</td>\n"
@@ -823,7 +822,7 @@ def crearArchivo(cadena,path):
             os.stat(path.strip())
         except:
             os.makedirs(path.strip())
-        with open(path+"Reporte Errores.html","w+") as file:
+        with open(path+"Reporte Errores.html","w+",encoding="utf-8") as file:
             file.seek(0,0)
             file.write(cadena)
             file.close()
@@ -835,7 +834,7 @@ def crearArchivo2(cadena,path):
             os.stat(path.strip())
         except:
             os.makedirs(path.strip())
-        with open(path+"Reporte Tabla.html","w+") as file:
+        with open(path+"Reporte Tabla.html","w+",encoding="utf-8") as file:
             file.seek(0,0)
             file.write(cadena)
             file.close()
@@ -864,7 +863,10 @@ def mostrar_Reporte():
     webbrowser.open_new_tab('.Reporte Errores.html')
 
 def mostrar_AST():
-    webbrowser.open_new_tab('ast.pdf')
+    webbrowser.open_new_tab('ast.svg')
+
+def mostrar_Tabla():
+    webbrowser.open_new_tab('.Reporte Tabla.html')
 
 def new():
     global extencion 
@@ -918,6 +920,7 @@ reportmenu = Menu(menubar)
 reportmenu = Menu(menubar)
 reportmenu.add_command(label = "Reporte de Errores", command = mostrar_Reporte)
 reportmenu.add_command(label = "Reporte de AST", command = mostrar_AST)
+reportmenu.add_command(label = "Reporte de Tabla de Simbolos", command = mostrar_Tabla)
 
 menubar.add_cascade(label="Reportes", menu=reportmenu)
 

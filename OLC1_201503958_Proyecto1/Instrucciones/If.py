@@ -22,7 +22,7 @@ class If(Instruccion):
 
         if self.condicion.tipo == TIPO.BOOLEANO:
             if bool(condicion) == True:  
-                nuevaTabla = TablaSimbolos(table,"IF["+str(self.fila)+str(self.columna)+"]")    
+                nuevaTabla = TablaSimbolos(table,"IF["+str(self.fila)+","+str(self.columna)+"]")    
                 for instruccion in self.instruccionesIf:
                     result = instruccion.interpretar(tree, nuevaTabla) 
                     if isinstance(result, Excepcion) :
@@ -32,7 +32,7 @@ class If(Instruccion):
                     if isinstance(result, Return): return result
             else:               
                 if self.instruccionesElse != None:
-                    nuevaTabla = TablaSimbolos(table,"ELSE["+str(self.fila)+str(self.columna)+"]")   
+                    nuevaTabla = TablaSimbolos(table,"ELSE["+str(self.fila)+","+str(self.columna)+"]")   
                     for instruccion in self.instruccionesElse:
                         result = instruccion.interpretar(tree, nuevaTabla) 
                         if isinstance(result, Excepcion) :

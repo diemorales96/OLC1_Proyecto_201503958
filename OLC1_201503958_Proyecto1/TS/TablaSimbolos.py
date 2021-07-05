@@ -18,8 +18,8 @@ class TablaSimbolos:
         else:
             self.tabla[simbolo.id.lower()] = simbolo
             for lista in self.TSIMB:
-                if self.entorno == lista[0] and simbolo.id.lower() == lista[2]:
-                    lista[3] = simbolo.valor
+                if self.entorno == lista[3] and simbolo.id.lower() == lista[0]:
+                    lista[4] = simbolo.valor
                     return None
             if simbolo.arreglo == False and simbolo.funcion == False :
                 self.tipo_dec = "VARIABLE"
