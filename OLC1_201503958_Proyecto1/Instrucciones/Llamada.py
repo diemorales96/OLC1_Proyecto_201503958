@@ -1,3 +1,4 @@
+from TS.Tipo import TIPO
 from Abstract.NodoAST import NodoAST
 from TS.Simbolo import Simbolo
 from Instrucciones.Funcion import Funcion
@@ -29,11 +30,15 @@ class Llamada(Instruccion):
                 if isinstance(resultExpresion, Excepcion): return resultExpresion
                 if (result.parametros[contador]['identificador'].lower() == "length##param1") or (result.parametros[contador]['identificador'].lower() == "truncate##param1")or (result.parametros[contador]['identificador'].lower() == "round##param1")or (result.parametros[contador]['identificador'].lower() == "typeof##param1"):
                     result.parametros[contador]["tipo"] = expresion.tipo
-                if result.parametros[contador]["tipo"] == expresion.tipo: 
-                    
-                    simbolo = Simbolo(str(result.parametros[contador]['identificador']).lower(), result.parametros[contador]['tipo'],self.arreglo,self.funcion, self.fila, self.columna, resultExpresion)
+                if result.parametros[contador]["tipo"] == expresion.tipo or result.parametros[contador]["tipo"] == TIPO.ARREGLO: 
+                    if result.parametros[contador]['tipo'] == TIPO.ARREGLO:
+                        self.arreglo = True
+                        simbolo = Simbolo(str(result.parametros[contador]['identificador']).lower(),expresion.tipo,self.arreglo,self.funcion,self.fila,self.columna,resultExpresion)
+                    else:
+                        simbolo = Simbolo(str(result.parametros[contador]['identificador']).lower(), result.parametros[contador]['tipo'],self.arreglo,self.funcion, self.fila, self.columna, resultExpresion)
                     resultTabla = nuevaTabla.setTabla(simbolo)
                     if isinstance(resultTabla, Excepcion): return resultTabla
+                 
                 else:
                     return Excepcion("Semantico", "Tipo de dato diferente en Parametros de la llamada.", self.fila, self.columna)
                 contador += 1 

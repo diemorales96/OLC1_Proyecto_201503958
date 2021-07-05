@@ -448,7 +448,7 @@ def p_parametro(t) :
 
 def p_parametro_Arreglo(t):
     '''parametro    : tipo lista_Dim ID'''
-    t[0] = {'tipo':t[1],'identificador':t[3],'tipo_dato':TIPO.ARREGLO,'longitud':t[2]}
+    t[0] = {'tipo':TIPO.ARREGLO,'tipo2':t[2],'dim':t[2],'identificador':t[3]}
 
 #///////////////////////////////////////LLAMADA//////////////////////////////////////////////////
 

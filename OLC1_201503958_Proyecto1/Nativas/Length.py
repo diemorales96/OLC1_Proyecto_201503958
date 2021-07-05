@@ -16,8 +16,9 @@ class Length(Funcion):
         simbolo = table.getTabla("length##param1")
         if simbolo == None : return Excepcion("Semantico", "No se encontró el parámetro de Length", self.fila, self.columna)
 
-        if simbolo.getTipo() != TIPO.CADENA and simbolo.getTipo() != TIPO.ARREGLO:
-            return Excepcion("Semantico", "Tipo de parametro de Length No coincide.", self.fila, self.columna)
-
-        self.tipo = simbolo.getTipo()
-        return len(simbolo.getValor())
+        if simbolo.getTipo() == TIPO.CADENA :
+            return len(simbolo.getValor())
+        elif simbolo.arreglo == False or simbolo.getTipo()==TIPO.CADENA:
+            self.tipo=TIPO.ENTERO
+            return len(simbolo.getValor())
+        return Excepcion("Semantico", "Tipo de parametro de Length No coincide.", self.fila, self.columna)
